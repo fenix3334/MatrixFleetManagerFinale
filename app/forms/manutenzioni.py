@@ -23,7 +23,7 @@ class ManutenzioneForm(FlaskForm):
     
     descrizione = TextAreaField('Descrizione')
     costo = DecimalField('Costo (€)', validators=[Optional(), NumberRange(min=0)], places=2)
-    numero_fattura = StringField('Numero Fattura', validators=[Length(max=50)])
+    numero_documento = StringField('Numero Fattura', validators=[Length(max=50)])
     data_fattura = DateField('Data Fattura', validators=[Optional()])
     garanzia_mesi = IntegerField('Garanzia (mesi)', validators=[NumberRange(min=0, max=120)], default=0)
     prossima_scadenza_km = IntegerField('Prossima Scadenza KM', validators=[Optional(), NumberRange(min=0)])

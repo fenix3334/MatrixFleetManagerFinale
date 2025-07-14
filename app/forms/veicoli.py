@@ -6,7 +6,7 @@ from datetime import date
 class VeicoloForm(FlaskForm):
     # DATI IDENTIFICATIVI
     targa = StringField('Targa', 
-                       validators=[DataRequired(), Length(min=7, max=8)],
+                       validators=[DataRequired(), Length(min=7, max=10)],  # ✅ CORRETTO: da 8 a 10 caratteri
                        render_kw={"placeholder": "Es: AB123CD"})
     
     marca = StringField('Marca', 

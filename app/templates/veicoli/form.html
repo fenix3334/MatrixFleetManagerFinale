@@ -115,15 +115,15 @@
                 </div>
             </div>
 
-            <!-- SEZIONE 2: IMMATRICOLAZIONE E STATO -->
+            <!-- SEZIONE 2: DATI IMMATRICOLAZIONE -->
             <div class="form-card" data-section="2">
                 <div class="card-header">
                     <div class="card-icon">
                         <i class="fas fa-calendar-alt"></i>
                     </div>
                     <div class="card-title">
-                        <h3>Immatricolazione e Stato</h3>
-                        <p>Date, chilometri e stato attuale</p>
+                        <h3>Dati Immatricolazione</h3>
+                        <p>Anno, data e chilometraggio</p>
                     </div>
                 </div>
                 <div class="card-content">
@@ -131,7 +131,7 @@
                         <div class="form-group">
                             {{ form.anno_immatricolazione.label(class="form-label-modern") }}
                             <div class="input-wrapper">
-                                {{ form.anno_immatricolazione(class="form-input-modern", placeholder="2024") }}
+                                {{ form.anno_immatricolazione(class="form-input-modern", placeholder="2020") }}
                                 <div class="input-icon">
                                     <i class="fas fa-calendar"></i>
                                 </div>
@@ -152,7 +152,7 @@
                             <div class="input-wrapper">
                                 {{ form.data_immatricolazione(class="form-input-modern") }}
                                 <div class="input-icon">
-                                    <i class="fas fa-calendar-day"></i>
+                                    <i class="fas fa-calendar-check"></i>
                                 </div>
                             </div>
                             {% if form.data_immatricolazione.errors %}
@@ -192,8 +192,65 @@
                 </div>
             </div>
 
-            <!-- SEZIONE 3: CARATTERISTICHE TECNICHE -->
+            <!-- 🆕 SEZIONE 3: UNITÀ OPERATIVA -->
             <div class="form-card" data-section="3">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>Unità Operativa</h3>
+                        <p>Assegnazione del veicolo</p>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.unita_operativa.label(class="form-label-modern") }}
+                            <div class="input-wrapper select-wrapper">
+                                {{ form.unita_operativa(class="form-select-modern", id="unita-operativa-select") }}
+                                <div class="input-icon">
+                                    <i class="fas fa-sitemap"></i>
+                                </div>
+                            </div>
+                            {% if form.unita_operativa.errors %}
+                                <div class="form-errors-modern">
+                                    {% for error in form.unita_operativa.errors %}
+                                        <span class="error-message">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ error }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Campo personalizzato (nascosto inizialmente) -->
+                        <div class="form-group" id="unita-operativa-personalizzata-group" style="display: none;">
+                            {{ form.unita_operativa_personalizzata.label(class="form-label-modern") }}
+                            <div class="input-wrapper">
+                                {{ form.unita_operativa_personalizzata(class="form-input-modern", placeholder="Inserisci unità operativa personalizzata...") }}
+                                <div class="input-icon">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                            </div>
+                            {% if form.unita_operativa_personalizzata.errors %}
+                                <div class="form-errors-modern">
+                                    {% for error in form.unita_operativa_personalizzata.errors %}
+                                        <span class="error-message">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ error }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEZIONE 4: CARATTERISTICHE TECNICHE -->
+            <div class="form-card" data-section="4">
                 <div class="card-header">
                     <div class="card-icon">
                         <i class="fas fa-cogs"></i>
@@ -207,21 +264,43 @@
                     <div class="form-row">
                         <div class="form-group">
                             {{ form.carburante.label(class="form-label-modern") }}
-                            <div class="input-wrapper">
+                            <div class="input-wrapper select-wrapper">
                                 {{ form.carburante(class="form-select-modern", id="carburante-select") }}
                                 <div class="input-icon">
                                     <i class="fas fa-gas-pump"></i>
                                 </div>
                             </div>
+                            {% if form.carburante.errors %}
+                                <div class="form-errors-modern">
+                                    {% for error in form.carburante.errors %}
+                                        <span class="error-message">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ error }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
+                        
+                        <!-- Campo carburante personalizzato (nascosto inizialmente) -->
                         <div class="form-group" id="carburante-personalizzato-group" style="display: none;">
                             {{ form.carburante_personalizzato.label(class="form-label-modern") }}
                             <div class="input-wrapper">
-                                {{ form.carburante_personalizzato(class="form-input-modern", placeholder="Es: Idrogeno, E85") }}
+                                {{ form.carburante_personalizzato(class="form-input-modern", placeholder="Specifica il tipo di carburante...") }}
                                 <div class="input-icon">
-                                    <i class="fas fa-flask"></i>
+                                    <i class="fas fa-plus"></i>
                                 </div>
                             </div>
+                            {% if form.carburante_personalizzato.errors %}
+                                <div class="form-errors-modern">
+                                    {% for error in form.carburante_personalizzato.errors %}
+                                        <span class="error-message">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ error }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -239,7 +318,7 @@
                         <div class="form-group">
                             {{ form.colore.label(class="form-label-modern") }}
                             <div class="input-wrapper">
-                                {{ form.colore(class="form-input-modern", placeholder="Es: Bianco") }}
+                                {{ form.colore(class="form-input-modern", placeholder="Bianco") }}
                                 <div class="input-icon">
                                     <i class="fas fa-palette"></i>
                                 </div>
@@ -249,15 +328,15 @@
                 </div>
             </div>
 
-            <!-- SEZIONE 4: CARTA CARBURANTE -->
-            <div class="form-card" data-section="4">
+            <!-- SEZIONE 5: CARTA CARBURANTE & NOLEGGIO -->
+            <div class="form-card" data-section="5">
                 <div class="card-header">
                     <div class="card-icon">
                         <i class="fas fa-credit-card"></i>
                     </div>
                     <div class="card-title">
-                        <h3>Carta Carburante</h3>
-                        <p>Informazioni carta e PIN</p>
+                        <h3>Carta Carburante & Noleggio</h3>
+                        <p>Gestione rifornimenti e noleggio</p>
                     </div>
                 </div>
                 <div class="card-content">
@@ -265,7 +344,7 @@
                         <div class="form-group">
                             {{ form.carta_carburante.label(class="form-label-modern") }}
                             <div class="input-wrapper">
-                                {{ form.carta_carburante(class="form-input-modern", placeholder="1234-5678-9012-3456") }}
+                                {{ form.carta_carburante(class="form-input-modern", placeholder="Es: Q8 Easy") }}
                                 <div class="input-icon">
                                     <i class="fas fa-credit-card"></i>
                                 </div>
@@ -273,39 +352,22 @@
                         </div>
                         <div class="form-group">
                             {{ form.pin_carburante.label(class="form-label-modern") }}
-                            <div class="input-wrapper pin-wrapper">
-                                {{ form.pin_carburante(class="form-input-modern", placeholder="****", type="password", id="pin-carburante-field") }}
+                            <div class="input-wrapper">
+                                {{ form.pin_carburante(class="form-input-modern", placeholder="PIN") }}
                                 <div class="input-icon">
-                                    <i class="fas fa-lock"></i>
+                                    <i class="fas fa-key"></i>
                                 </div>
-                                <button type="button" class="pin-toggle-btn" onclick="togglePinVisibility()">
-                                    <i class="fas fa-eye" id="pin-eye-icon"></i>
-                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- SEZIONE 5: INFORMAZIONI NOLEGGIO -->
-            <div class="form-card" data-section="5">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-handshake"></i>
-                    </div>
-                    <div class="card-title">
-                        <h3>Informazioni Noleggio</h3>
-                        <p>Società e dati contrattuali</p>
-                    </div>
-                </div>
-                <div class="card-content">
+                    
                     <div class="form-row">
                         <div class="form-group full-width">
                             {{ form.societa_noleggio_id.label(class="form-label-modern") }}
-                            <div class="input-wrapper">
+                            <div class="input-wrapper select-wrapper">
                                 {{ form.societa_noleggio_id(class="form-select-modern") }}
                                 <div class="input-icon">
-                                    <i class="fas fa-building"></i>
+                                    <i class="fas fa-handshake"></i>
                                 </div>
                             </div>
                             <div class="form-help-text">
@@ -383,7 +445,7 @@
     padding: 25px;
     background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.05));
     border: 1px solid rgba(0, 255, 65, 0.3);
-    border-radius: 15px;
+    border-radius: 12px;
     backdrop-filter: blur(10px);
 }
 
@@ -396,62 +458,37 @@
 .form-icon-wrapper {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #00ff41, #7fff7f);
-    border-radius: 15px;
+    background: rgba(0, 255, 65, 0.2);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 15px rgba(0, 255, 65, 0.3);
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
 }
 
 .form-icon-wrapper i {
     font-size: 24px;
-    color: #000;
+    color: #00ff41;
 }
 
-.form-title-info h1 {
-    margin: 0;
-    font-size: 28px;
+.form-title-main {
+    font-size: 32px;
     color: #00ff41;
-    font-weight: 700;
+    margin: 0;
+    font-family: 'Orbitron', monospace;
     text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
 }
 
 .form-subtitle {
+    color: #a0a0a0;
     margin: 5px 0 0 0;
-    color: #ccc;
     font-size: 14px;
 }
 
-.btn-header {
-    padding: 12px 20px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-secondary {
-    background: rgba(108, 117, 125, 0.2);
-    color: #6c757d;
-    border: 1px solid rgba(108, 117, 125, 0.4);
-}
-
-.btn-secondary:hover {
-    background: rgba(108, 117, 125, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
-}
-
-/* Grid delle Sezioni */
+/* Grid delle sezioni */
 .form-sections-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
     gap: 25px;
     margin-bottom: 30px;
 }
@@ -460,41 +497,39 @@
     grid-column: span 2;
 }
 
-/* Card Form */
+/* Card delle sezioni */
 .form-card {
-    background: rgba(0, 20, 0, 0.4);
-    border: 1px solid rgba(0, 255, 65, 0.2);
-    border-radius: 15px;
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 12px;
     overflow: hidden;
+    backdrop-filter: blur(10px);
     transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
 }
 
 .form-card:hover {
-    border-color: rgba(0, 255, 65, 0.4);
-    box-shadow: 0 8px 25px rgba(0, 255, 65, 0.1);
     transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 255, 65, 0.15);
+    border-color: rgba(0, 255, 65, 0.5);
 }
 
 .card-header {
-    padding: 20px;
-    background: linear-gradient(135deg, rgba(0, 255, 65, 0.08), rgba(0, 255, 65, 0.03));
-    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
     display: flex;
     align-items: center;
     gap: 15px;
+    padding: 20px;
+    background: rgba(0, 255, 65, 0.1);
+    border-bottom: 1px solid rgba(0, 255, 65, 0.2);
 }
 
 .card-icon {
-    width: 45px;
-    height: 45px;
-    background: rgba(0, 255, 65, 0.1);
-    border: 1px solid rgba(0, 255, 65, 0.3);
-    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 255, 65, 0.2);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
 }
 
 .card-icon i {
@@ -503,23 +538,23 @@
 }
 
 .card-title h3 {
-    margin: 0;
     color: #00ff41;
+    margin: 0;
     font-size: 18px;
-    font-weight: 600;
+    font-family: 'Orbitron', monospace;
 }
 
 .card-title p {
-    margin: 3px 0 0 0;
-    color: #999;
-    font-size: 13px;
+    color: #a0a0a0;
+    margin: 2px 0 0 0;
+    font-size: 12px;
 }
 
 .card-content {
     padding: 25px;
 }
 
-/* Form Rows e Groups */
+/* Form layout */
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -547,118 +582,82 @@
     font-weight: 600;
     font-size: 14px;
     margin-bottom: 5px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* Input Wrapper */
+/* Input containers */
 .input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-/* Input Fields */
-.form-input-modern, .form-select-modern {
-    width: 100%;
-    padding: 12px 45px 12px 45px;
-    background: rgba(0, 20, 0, 0.6);
-    border: 2px solid rgba(0, 255, 65, 0.2);
-    border-radius: 10px;
-    color: #00ff41;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    font-family: 'Orbitron', monospace;
+.input-wrapper.select-wrapper select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ff41' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+    padding-right: 45px;
 }
 
-.form-input-modern:focus, .form-select-modern:focus {
+/* Input fields */
+.form-input-modern, .form-select-modern, .form-textarea-modern {
+    width: 100%;
+    padding: 12px 15px;
+    padding-left: 45px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-input-modern:focus, .form-select-modern:focus, .form-textarea-modern:focus {
     outline: none;
     border-color: #00ff41;
     box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
-    transform: translateY(-1px);
+    background: rgba(0, 0, 0, 0.8);
 }
 
-.form-input-modern::placeholder {
-    color: rgba(0, 255, 65, 0.5);
-    font-style: italic;
-}
-
-/* Textarea */
 .form-textarea-modern {
-    width: 100%;
-    padding: 15px 45px 15px 45px;
-    background: rgba(0, 20, 0, 0.6);
-    border: 2px solid rgba(0, 255, 65, 0.2);
-    border-radius: 10px;
-    color: #00ff41;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    font-family: 'Orbitron', monospace;
     resize: vertical;
     min-height: 100px;
+    padding-top: 15px;
 }
 
-.form-textarea-modern:focus {
-    outline: none;
-    border-color: #00ff41;
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
-}
-
-.form-textarea-modern::placeholder {
-    color: rgba(0, 255, 65, 0.5);
-    font-style: italic;
-}
-
-/* Icons negli Input */
+/* Input icons */
 .input-icon, .textarea-icon {
     position: absolute;
     left: 15px;
-    color: rgba(0, 255, 65, 0.6);
-    pointer-events: none;
-    z-index: 2;
-    font-size: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #00ff41;
+    font-size: 16px;
+    z-index: 1;
 }
 
 .textarea-icon {
-    top: 15px;
+    top: 20px;
+    transform: none;
 }
 
-/* Input Suffix */
+/* Input suffix */
 .input-suffix {
     position: absolute;
     right: 15px;
-    color: rgba(0, 255, 65, 0.6);
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0a0a0;
     font-size: 12px;
     font-weight: 600;
-    pointer-events: none;
 }
 
-/* PIN Toggle Button */
-.pin-wrapper {
-    position: relative;
-}
-
-.pin-toggle-btn {
-    position: absolute;
-    right: 12px;
-    background: none;
-    border: none;
-    color: rgba(0, 255, 65, 0.6);
-    cursor: pointer;
-    padding: 5px;
-    transition: all 0.3s ease;
-    z-index: 3;
-}
-
-.pin-toggle-btn:hover {
-    color: #00ff41;
-    transform: scale(1.1);
-}
-
-/* Form Help Text */
+/* Help text */
 .form-help-text {
-    color: #999;
+    color: #a0a0a0;
     font-size: 12px;
     display: flex;
     align-items: center;
@@ -666,7 +665,7 @@
     margin-top: 5px;
 }
 
-/* Error Messages */
+/* Error handling */
 .form-errors-modern {
     margin-top: 5px;
 }
@@ -677,10 +676,7 @@
     gap: 5px;
     color: #dc3545;
     font-size: 12px;
-    padding: 5px 10px;
-    background: rgba(220, 53, 69, 0.1);
-    border-left: 3px solid #dc3545;
-    border-radius: 5px;
+    margin-bottom: 3px;
 }
 
 /* Form Actions */
@@ -689,10 +685,10 @@
     justify-content: space-between;
     align-items: center;
     padding: 25px;
-    background: linear-gradient(135deg, rgba(0, 255, 65, 0.05), rgba(0, 255, 65, 0.02));
-    border: 1px solid rgba(0, 255, 65, 0.2);
-    border-radius: 15px;
-    backdrop-filter: blur(5px);
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
 }
 
 .actions-left, .actions-right {
@@ -701,57 +697,80 @@
 }
 
 .btn-action {
-    padding: 12px 20px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 12px 24px;
     border: none;
-    cursor: pointer;
+    border-radius: 8px;
     font-size: 14px;
-}
-
-.btn-reset {
-    background: rgba(255, 193, 7, 0.1);
-    color: #ffc107;
-    border: 1px solid rgba(255, 193, 7, 0.4);
-}
-
-.btn-reset:hover {
-    background: rgba(255, 193, 7, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
-}
-
-.btn-cancel {
-    background: rgba(108, 117, 125, 0.2);
-    color: #6c757d;
-    border: 1px solid rgba(108, 117, 125, 0.4);
-}
-
-.btn-cancel:hover {
-    background: rgba(108, 117, 125, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .btn-save {
-    background: linear-gradient(135deg, #00ff41, #7fff7f);
-    color: #000;
-    border: 1px solid #00ff41;
-    font-weight: 700;
+    background: linear-gradient(135deg, #00ff41, #00cc33);
+    color: #000000;
 }
 
 .btn-save:hover {
-    background: linear-gradient(135deg, #7fff7f, #00ff41);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 255, 65, 0.4);
+    box-shadow: 0 5px 20px rgba(0, 255, 65, 0.4);
 }
 
-/* === RESPONSIVE === */
+.btn-cancel {
+    background: rgba(220, 53, 69, 0.8);
+    color: #ffffff;
+    border: 1px solid rgba(220, 53, 69, 0.5);
+}
+
+.btn-cancel:hover {
+    background: rgba(220, 53, 69, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(220, 53, 69, 0.3);
+}
+
+.btn-reset {
+    background: rgba(108, 117, 125, 0.8);
+    color: #ffffff;
+    border: 1px solid rgba(108, 117, 125, 0.5);
+}
+
+.btn-reset:hover {
+    background: rgba(108, 117, 125, 1);
+    transform: translateY(-2px);
+}
+
+/* Header buttons */
+.btn-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary {
+    background: rgba(108, 117, 125, 0.8);
+    color: #ffffff;
+    border: 1px solid rgba(108, 117, 125, 0.5);
+}
+
+.btn-secondary:hover {
+    background: rgba(108, 117, 125, 1);
+    transform: translateY(-2px);
+}
+
+/* Responsive */
 @media (max-width: 1200px) {
     .form-sections-grid {
         grid-template-columns: 1fr;
@@ -763,19 +782,10 @@
 }
 
 @media (max-width: 768px) {
-    .modern-form-container {
-        padding: 15px;
-    }
-    
     .form-header-modern {
         flex-direction: column;
-        gap: 20px;
-        text-align: center;
-    }
-    
-    .form-title-section {
-        flex-direction: column;
         gap: 15px;
+        text-align: center;
     }
     
     .form-row {
@@ -787,10 +797,6 @@
         grid-column: span 1;
     }
     
-    .card-content {
-        padding: 20px;
-    }
-    
     .form-actions-modern {
         flex-direction: column;
         gap: 15px;
@@ -800,132 +806,72 @@
         width: 100%;
         justify-content: center;
     }
-    
-    .btn-action {
-        flex: 1;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .form-input-modern, .form-select-modern {
-        padding: 10px 35px 10px 35px;
-        font-size: 13px;
-    }
-    
-    .form-textarea-modern {
-        padding: 12px 35px 12px 35px;
-    }
-    
-    .input-icon {
-        left: 12px;
-        font-size: 12px;
-    }
-    
-    .card-header {
-        padding: 15px;
-    }
-    
-    .card-content {
-        padding: 15px;
-    }
 }
 </style>
 
 <script>
-// Gestione carburante personalizzato
-document.addEventListener('DOMContentLoaded', function() {
-    const carburanteSelect = document.getElementById('carburante-select');
-    const carburantePersonalizzatoGroup = document.getElementById('carburante-personalizzato-group');
+// JavaScript per gestione campi dinamici
+
+// Mostra/nascondi campo carburante personalizzato
+document.getElementById('carburante-select').addEventListener('change', function() {
+    const personalizzatoGroup = document.getElementById('carburante-personalizzato-group');
+    const personalizzatoInput = personalizzatoGroup.querySelector('input');
     
-    function toggleCarburantePersonalizzato() {
-        if (carburanteSelect.value === 'Altro') {
-            carburantePersonalizzatoGroup.style.display = 'block';
-            carburantePersonalizzatoGroup.style.gridColumn = 'span 2';
-        } else {
-            carburantePersonalizzatoGroup.style.display = 'none';
-        }
+    if (this.value === 'Altro') {
+        personalizzatoGroup.style.display = 'block';
+        personalizzatoInput.required = true;
+    } else {
+        personalizzatoGroup.style.display = 'none';
+        personalizzatoInput.required = false;
+        personalizzatoInput.value = '';
     }
-    
-    carburanteSelect.addEventListener('change', toggleCarburantePersonalizzato);
-    toggleCarburantePersonalizzato(); // Check iniziale
 });
 
-// Toggle PIN visibility
-function togglePinVisibility() {
-    const pinField = document.getElementById('pin-carburante-field');
-    const eyeIcon = document.getElementById('pin-eye-icon');
-    const inputWrapper = pinField.closest('.input-wrapper');
+// 🆕 Mostra/nascondi campo unità operativa personalizzata
+document.getElementById('unita-operativa-select').addEventListener('change', function() {
+    const personalizzatoGroup = document.getElementById('unita-operativa-personalizzata-group');
+    const personalizzatoInput = personalizzatoGroup.querySelector('input');
     
-    if (pinField.type === 'password') {
-        pinField.type = 'text';
-        eyeIcon.classList.remove('fa-eye');
-        eyeIcon.classList.add('fa-eye-slash');
-        inputWrapper.style.borderColor = '#ffc107';
-        
-        // Auto-hide dopo 5 secondi
-        setTimeout(() => {
-            if (pinField.type === 'text') {
-                pinField.type = 'password';
-                eyeIcon.classList.remove('fa-eye-slash');
-                eyeIcon.classList.add('fa-eye');
-                inputWrapper.style.borderColor = '';
-            }
-        }, 5000);
+    if (this.value === 'Altro') {
+        personalizzatoGroup.style.display = 'block';
+        personalizzatoInput.required = true;
     } else {
-        pinField.type = 'password';
-        eyeIcon.classList.remove('fa-eye-slash');
-        eyeIcon.classList.add('fa-eye');
-        inputWrapper.style.borderColor = '';
+        personalizzatoGroup.style.display = 'none';
+        personalizzatoInput.required = false;
+        personalizzatoInput.value = '';
     }
-}
+});
 
-// Reset form
+// Inizializza stato al caricamento della pagina
+document.addEventListener('DOMContentLoaded', function() {
+    // Controlla carburante
+    const carburanteSelect = document.getElementById('carburante-select');
+    if (carburanteSelect.value === 'Altro') {
+        document.getElementById('carburante-personalizzato-group').style.display = 'block';
+        document.getElementById('carburante-personalizzato-group').querySelector('input').required = true;
+    }
+    
+    // 🆕 Controlla unità operativa
+    const unitaOperativaSelect = document.getElementById('unita-operativa-select');
+    if (unitaOperativaSelect.value === 'Altro') {
+        document.getElementById('unita-operativa-personalizzata-group').style.display = 'block';
+        document.getElementById('unita-operativa-personalizzata-group').querySelector('input').required = true;
+    }
+});
+
+// Funzione reset form
 function resetForm() {
-    if (confirm('Sei sicuro di voler resettare tutti i campi?')) {
+    if (confirm('Sei sicuro di voler resettare tutti i campi del form?')) {
         document.getElementById('vehicleForm').reset();
         
-        // Reset custom fields
-        const carburantePersonalizzatoGroup = document.getElementById('carburante-personalizzato-group');
-        carburantePersonalizzatoGroup.style.display = 'none';
+        // Nascondi campi personalizzati
+        document.getElementById('carburante-personalizzato-group').style.display = 'none';
+        document.getElementById('unita-operativa-personalizzata-group').style.display = 'none';
         
-        // Reset pin field
-        const pinField = document.getElementById('pin-carburante-field');
-        const eyeIcon = document.getElementById('pin-eye-icon');
-        pinField.type = 'password';
-        eyeIcon.classList.remove('fa-eye-slash');
-        eyeIcon.classList.add('fa-eye');
+        // Rimuovi required dai campi nascosti
+        document.getElementById('carburante-personalizzato-group').querySelector('input').required = false;
+        document.getElementById('unita-operativa-personalizzata-group').querySelector('input').required = false;
     }
 }
-
-// Effetti hover per le card
-document.querySelectorAll('.form-card').forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        this.style.borderColor = 'rgba(0, 255, 65, 0.6)';
-        this.style.boxShadow = '0 12px 35px rgba(0, 255, 65, 0.15)';
-    });
-    
-    card.addEventListener('mouseleave', function() {
-        this.style.borderColor = 'rgba(0, 255, 65, 0.2)';
-        this.style.boxShadow = '0 8px 25px rgba(0, 255, 65, 0.1)';
-    });
-});
-
-// Effetti focus per tutti gli input
-document.querySelectorAll('.form-input-modern, .form-select-modern, .form-textarea-modern').forEach(input => {
-    input.addEventListener('focus', function() {
-        const card = this.closest('.form-card');
-        if (card) {
-            card.style.borderColor = 'rgba(0, 255, 65, 0.8)';
-        }
-    });
-    
-    input.addEventListener('blur', function() {
-        const card = this.closest('.form-card');
-        if (card) {
-            card.style.borderColor = 'rgba(0, 255, 65, 0.2)';
-        }
-    });
-});
 </script>
 {% endblock %}

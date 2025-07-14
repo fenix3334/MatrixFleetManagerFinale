@@ -109,8 +109,8 @@
                         {% if manutenzione.fornitore %}
                             <div class="supplier-info">
                                 <div class="supplier-name">{{ manutenzione.fornitore.ragione_sociale }}</div>
-                                {% if manutenzione.numero_fattura %}
-                                <div class="invoice-number">Fatt: {{ manutenzione.numero_fattura }}</div>
+                                {% if manutenzione.numero_documento %}
+                                <div class="invoice-number">Fatt: {{ manutenzione.numero_documento }}</div>
                                 {% endif %}
                             </div>
                         {% else %}

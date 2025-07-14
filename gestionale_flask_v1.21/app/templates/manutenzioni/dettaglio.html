@@ -1,0 +1,580 @@
+{% extends "base.html" %}
+
+{% block title %}Manutenzione {{ manutenzione.tipo_intervento }} - {{ manutenzione.veicolo.targa }}{% endblock %}
+
+{% block content %}
+<div class="modern-detail-container">
+    <div class="detail-header-modern">
+        <div class="detail-title-section">
+            <div class="detail-icon-wrapper">
+                <i class="fas fa-wrench"></i>
+            </div>
+            <div class="detail-title-info">
+                <h1 class="detail-title-main">{{ manutenzione.tipo_intervento }}</h1>
+                <p class="detail-subtitle">
+                    <span class="vehicle-plate-header">{{ manutenzione.veicolo.targa }}</span>
+                    Dettaglio intervento di manutenzione
+                </p>
+            </div>
+        </div>
+        <div class="detail-actions-header">
+            <a href="{{ url_for('manutenzioni.modifica_manutenzione', id=manutenzione.id) }}" class="btn-header btn-primary">
+                <i class="fas fa-edit"></i>
+                <span>Modifica</span>
+            </a>
+            <a href="{{ url_for('manutenzioni.index_manutenzioni') }}" class="btn-header btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Lista Manutenzioni</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="detail-sections-grid">
+        
+        <!-- SEZIONE 1: DATI INTERVENTO -->
+        <div class="detail-card" data-section="1">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Dati Intervento</h3>
+                    <p>Informazioni base dell'intervento</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Veicolo:</span>
+                    <span class="detail-value">
+                        <span class="vehicle-plate">{{ manutenzione.veicolo.targa }}</span>
+                        {{ manutenzione.veicolo.marca }} {{ manutenzione.veicolo.modello }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Tipo Intervento:</span>
+                    <span class="detail-value intervention-badge">
+                        <i class="fas fa-tools"></i>
+                        {{ manutenzione.tipo_intervento }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Data Intervento:</span>
+                    <span class="detail-value">
+                        <i class="fas fa-calendar"></i>
+                        {{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">KM Intervento:</span>
+                    <span class="detail-value km-value">
+                        <i class="fas fa-tachometer-alt"></i>
+                        {{ "{:,}".format(manutenzione.km_intervento).replace(',', '.') }} km
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEZIONE 2: STATO & FORNITORE -->
+        <div class="detail-card" data-section="2">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Stato & Fornitore</h3>
+                    <p>Stato lavoro e responsabile</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Stato:</span>
+                    <span class="status-badge status-{{ manutenzione.stato.lower().replace(' ', '-') }}">
+                        <i class="fas fa-flag"></i>
+                        {{ manutenzione.stato }}
+                    </span>
+                </div>
+                {% if manutenzione.fornitore %}
+                <div class="detail-item">
+                    <span class="detail-label">Fornitore:</span>
+                    <span class="detail-value supplier-name">
+                        <i class="fas fa-building"></i>
+                        {{ manutenzione.fornitore.ragione_sociale }}
+                    </span>
+                </div>
+                {% if manutenzione.fornitore.telefono %}
+                <div class="detail-item">
+                    <span class="detail-label">Telefono:</span>
+                    <span class="detail-value">
+                        <a href="tel:{{ manutenzione.fornitore.telefono }}" class="contact-link">
+                            <i class="fas fa-phone"></i>
+                            {{ manutenzione.fornitore.telefono }}
+                        </a>
+                    </span>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="detail-item">
+                    <span class="detail-label">Fornitore:</span>
+                    <span class="detail-value no-data">Non specificato</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SEZIONE 3: COSTI & DOCUMENTI -->
+        <div class="detail-card" data-section="3">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Costi & Documenti</h3>
+                    <p>Informazioni economiche</p>
+                </div>
+            </div>
+            <div class="card-content">
+                {% if manutenzione.costo %}
+                <div class="detail-item">
+                    <span class="detail-label">Costo:</span>
+                    <span class="detail-value cost-value">
+                        <i class="fas fa-euro-sign"></i>
+                        {{ "%.2f"|format(manutenzione.costo) }} €
+                    </span>
+                </div>
+                {% endif %}
+                {% if manutenzione.numero_documento %}
+                <div class="detail-item">
+                    <span class="detail-label">Numero Fattura:</span>
+                    <span class="detail-value invoice-number">
+                        <i class="fas fa-file-invoice"></i>
+                        {{ manutenzione.numero_documento }}
+                    </span>
+                </div>
+                {% endif %}
+                {% if manutenzione.data_fattura %}
+                <div class="detail-item">
+                    <span class="detail-label">Data Fattura:</span>
+                    <span class="detail-value">
+                        <i class="fas fa-receipt"></i>
+                        {{ manutenzione.data_fattura.strftime('%d/%m/%Y') }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SEZIONE 4: GARANZIE & SCADENZE -->
+        <div class="detail-card" data-section="4">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Garanzie & Scadenze</h3>
+                    <p>Durata e prossimi interventi</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Garanzia:</span>
+                    <span class="detail-value warranty-value">
+                        <i class="fas fa-shield-alt"></i>
+                        {{ manutenzione.garanzia_mesi or 0 }} mesi
+                    </span>
+                </div>
+                {% if manutenzione.prossima_scadenza_km %}
+                <div class="detail-item">
+                    <span class="detail-label">Prossima Scadenza:</span>
+                    <span class="detail-value next-maintenance">
+                        <i class="fas fa-clock"></i>
+                        {{ "{:,}".format(manutenzione.prossima_scadenza_km).replace(',', '.') }} km
+                    </span>
+                </div>
+                {% endif %}
+                {% if manutenzione.prossima_scadenza_km and manutenzione.veicolo.km_attuali %}
+                <div class="detail-item">
+                    <span class="detail-label">KM Rimanenti:</span>
+                    <span class="detail-value remaining-km">
+                        <i class="fas fa-road"></i>
+                        {{ "{:,}".format(manutenzione.prossima_scadenza_km - manutenzione.veicolo.km_attuali).replace(',', '.') }} km
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SEZIONE 5: DESCRIZIONE -->
+        {% if manutenzione.descrizione %}
+        <div class="detail-card full-width" data-section="5">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Descrizione Intervento</h3>
+                    <p>Dettagli tecnici dell'intervento</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="description-content">
+                    {{ manutenzione.descrizione }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SEZIONE 6: NOTE -->
+        {% if manutenzione.note %}
+        <div class="detail-card full-width" data-section="6">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-sticky-note"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Note</h3>
+                    <p>Annotazioni aggiuntive</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="notes-content">
+                    {{ manutenzione.note }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* === DETTAGLIO MODERNO === */
+.modern-detail-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+    background: linear-gradient(135deg, rgba(0, 20, 0, 0.7), rgba(0, 40, 0, 0.3));
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.detail-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+    padding: 25px;
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.05));
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.detail-title-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.detail-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #00ff41, #7fff7f);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 255, 65, 0.3);
+}
+
+.detail-icon-wrapper i {
+    font-size: 24px;
+    color: #000;
+}
+
+.detail-title-info h1 {
+    margin: 0;
+    font-size: 22px;
+    color: #00ff41;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.vehicle-plate-header {
+    font-family: 'Orbitron', monospace;
+    background: rgba(0, 255, 65, 0.2);
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 65, 0.5);
+    font-size: 16px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.detail-subtitle {
+    margin: 5px 0 0 0;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.detail-actions-header {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-header {
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00ff41, #7fff7f);
+    color: #000;
+    border: 1px solid #00ff41;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #7fff7f, #00ff41);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 255, 65, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.4);
+}
+
+.btn-secondary:hover {
+    background: rgba(108, 117, 125, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
+}
+
+.detail-sections-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+.detail-card.full-width {
+    grid-column: span 2;
+}
+
+.detail-card {
+    background: rgba(0, 20, 0, 0.4);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.detail-card:hover {
+    border-color: rgba(0, 255, 65, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 255, 65, 0.1);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.08), rgba(0, 255, 65, 0.03));
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.card-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-icon i {
+    color: #00ff41;
+    font-size: 18px;
+}
+
+.card-title h3 {
+    margin: 0;
+    color: #00ff41;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.card-title p {
+    margin: 3px 0 0 0;
+    color: #999;
+    font-size: 13px;
+}
+
+.card-content {
+    padding: 25px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #999;
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 140px;
+}
+
+.detail-value {
+    color: #fff;
+    font-weight: 600;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Badges Specifici */
+.vehicle-plate {
+    font-family: 'Orbitron', monospace;
+    background: rgba(0, 255, 65, 0.2);
+    color: #00ff41;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 255, 65, 0.5);
+    font-weight: bold;
+}
+
+.intervention-badge {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    padding: 6px 12px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 193, 7, 0.5);
+    font-size: 12px;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-fatto { background: rgba(40, 167, 69, 0.2); color: #28a745; border: 1px solid #28a745; }
+.status-da-fare { background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid #ffc107; }
+
+.supplier-name, .cost-value, .invoice-number {
+    color: #00ff41;
+    font-weight: 700;
+}
+
+.km-value, .warranty-value, .next-maintenance, .remaining-km {
+    color: #00ff41;
+    font-family: 'Orbitron', monospace;
+}
+
+.no-data {
+    color: #666;
+    font-style: italic;
+}
+
+.contact-link {
+    color: #00ff41;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.contact-link:hover {
+    color: #7fff7f;
+    transform: translateX(3px);
+}
+
+.description-content, .notes-content {
+    background: rgba(0, 40, 0, 0.3);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    color: #ccc;
+    line-height: 1.6;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1200px) {
+    .detail-sections-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-card.full-width {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .modern-detail-container {
+        padding: 15px;
+    }
+    
+    .detail-header-modern {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+    
+    .detail-title-section {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .detail-title-info h1 {
+        font-size: 18px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .detail-actions-header {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .detail-value {
+        text-align: left;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Dettaglio Scadenza - Matrix Fleet Manager{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <div class="detail-header">
+        <div class="detail-title-section">
+            <h1 class="detail-title">
+                <i class="fas fa-clock"></i>
+                Dettaglio Scadenza: {{ scadenza.tipo_scadenza }}
+            </h1>
+            <p class="detail-subtitle">Informazioni complete sulla scadenza</p>
+        </div>
+        <div class="detail-actions">
+            <a href="{{ url_for('scadenze.modifica_scadenza', id=scadenza.id) }}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Modifica
+            </a>
+            <a href="{{ url_for('scadenze.index_scadenze') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Torna alla Lista
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Stato Scadenza -->
+    <div class="alert-section">
+        {% if scadenza.giorni_scadenza <= 0 %}
+            <div class="alert-box danger">
+                <i class="fas fa-times-circle"></i>
+                <strong>SCADENZA SUPERATA</strong>
+                <p>Questa scadenza è già scaduta da {{ scadenza.giorni_scadenza * -1 }} giorni. Procedere immediatamente!</p>
+            </div>
+        {% elif scadenza.giorni_scadenza <= 7 %}
+            <div class="alert-box critical">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>SCADENZA CRITICA</strong>
+                <p>Questa scadenza scadrà tra {{ scadenza.giorni_scadenza }} giorni. Pianificare intervento urgente.</p>
+            </div>
+        {% elif scadenza.giorni_scadenza <= 30 %}
+            <div class="alert-box warning">
+                <i class="fas fa-exclamation"></i>
+                <strong>SCADENZA IN AVVICINAMENTO</strong>
+                <p>Questa scadenza scadrà tra {{ scadenza.giorni_scadenza }} giorni. Pianificare intervento.</p>
+            </div>
+        {% else %}
+            <div class="alert-box info">
+                <i class="fas fa-info-circle"></i>
+                <strong>SCADENZA LONTANA</strong>
+                <p>Questa scadenza scadrà tra {{ scadenza.giorni_scadenza }} giorni. Tenere sotto controllo.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pannelli Informazioni -->
+    <div class="detail-panels">
+        
+        <!-- Informazioni Veicolo -->
+        <div class="detail-panel">
+            <h3><i class="fas fa-car"></i> Veicolo Associato</h3>
+            <div class="detail-content">
+                <div class="info-row">
+                    <span class="info-label">Targa:</span>
+                    <span class="info-value vehicle-plate">{{ scadenza.veicolo.targa }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Marca/Modello:</span>
+                    <span class="info-value">{{ scadenza.veicolo.marca }} {{ scadenza.veicolo.modello }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Anno:</span>
+                    <span class="info-value">{{ scadenza.veicolo.anno_immatricolazione }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Carburante:</span>
+                    <span class="info-value">{{ scadenza.veicolo.carburante_display }}</span>
+                </div>
+                <div class="detail-actions-inline">
+                    <a href="{{ url_for('veicoli.dettaglio_veicolo', id=scadenza.veicolo.id) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-eye"></i> Dettaglio Veicolo
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informazioni Scadenza -->
+        <div class="detail-panel">
+            <h3><i class="fas fa-calendar-alt"></i> Informazioni Scadenza</h3>
+            <div class="detail-content">
+                <div class="info-row">
+                    <span class="info-label">Tipo Scadenza:</span>
+                    <span class="info-value highlight">{{ scadenza.tipo_scadenza }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Data Scadenza:</span>
+                    <span class="info-value date-value">{{ scadenza.data_scadenza.strftime('%d/%m/%Y') }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Giorni Rimanenti:</span>
+                    <span class="info-value {% if scadenza.giorni_scadenza <= 0 %}text-danger{% elif scadenza.giorni_scadenza <= 7 %}text-warning{% else %}text-success{% endif %}">
+                        {% if scadenza.giorni_scadenza <= 0 %}
+                            Scaduta da {{ scadenza.giorni_scadenza * -1 }} giorni
+                        {% else %}
+                            {{ scadenza.giorni_scadenza }} giorni
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Stato:</span>
+                    <span class="badge status-{{ scadenza.stato|lower|replace(' ', '-') }}">{{ scadenza.stato }}</span>
+                </div>
+                {% if scadenza.costo %}
+                <div class="info-row">
+                    <span class="info-label">Costo Previsto:</span>
+                    <span class="info-value cost-value">{{ scadenza.costo_formattato }}</span>
+                </div>
+                {% endif %}
+                <div class="info-row">
+                    <span class="info-label">Notifica Anticipata:</span>
+                    <span class="info-value">{{ scadenza.notifica_giorni }} giorni prima</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Note -->
+        {% if scadenza.note %}
+        <div class="detail-panel full-width">
+            <h3><i class="fas fa-sticky-note"></i> Note</h3>
+            <div class="detail-content">
+                <div class="notes-content">
+                    {{ scadenza.note|replace('\n', '<br>')|safe }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Scadenze Correlate -->
+        <div class="detail-panel full-width">
+            <h3><i class="fas fa-list"></i> Altre Scadenze del Veicolo</h3>
+            <div class="detail-content">
+                {% set altre_scadenze = scadenza.veicolo.scadenze|rejectattr('id', 'equalto', scadenza.id)|list %}
+                {% if altre_scadenze %}
+                    <div class="scadenze-list">
+                        {% for altra_scadenza in altre_scadenze|sort(attribute='data_scadenza') %}
+                        <div class="scadenza-item {% if altra_scadenza.giorni_scadenza <= 7 %}urgent{% endif %}">
+                            <div class="scadenza-type">
+                                <i class="fas fa-{% if altra_scadenza.tipo_scadenza == 'Revisione' %}search{% elif altra_scadenza.tipo_scadenza == 'Assicurazione' %}shield-alt{% elif altra_scadenza.tipo_scadenza == 'Bollo' %}receipt{% else %}clock{% endif %}"></i>
+                                {{ altra_scadenza.tipo_scadenza }}
+                            </div>
+                            <div class="scadenza-date">
+                                {{ altra_scadenza.data_scadenza.strftime('%d/%m/%Y') }}
+                            </div>
+                            <div class="scadenza-days">
+                                {% if altra_scadenza.giorni_scadenza <= 0 %}
+                                    <span class="days-expired">Scaduta</span>
+                                {% elif altra_scadenza.giorni_scadenza <= 7 %}
+                                    <span class="days-critical">{{ altra_scadenza.giorni_scadenza }}g</span>
+                                {% else %}
+                                    <span class="days-ok">{{ altra_scadenza.giorni_scadenza }}g</span>
+                                {% endif %}
+                            </div>
+                            <div class="scadenza-actions">
+                                <a href="{{ url_for('scadenze.dettaglio_scadenza', id=altra_scadenza.id) }}" class="btn btn-xs btn-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check"></i>
+                        <p>Nessuna altra scadenza registrata per questo veicolo</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- CSS Aggiuntivo per Dettaglio -->
+<style>
+.scadenze-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.scadenza-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--matrix-gray);
+    border: 1px solid var(--matrix-light-gray);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.scadenza-item:hover {
+    border-color: var(--matrix-green);
+    background: rgba(0, 255, 65, 0.05);
+}
+
+.scadenza-item.urgent {
+    border-color: var(--matrix-warning);
+    background: rgba(255, 165, 2, 0.1);
+}
+
+.scadenza-type {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.scadenza-date {
+    font-family: 'Orbitron', monospace;
+    color: var(--matrix-text-dim);
+    font-size: 0.9rem;
+}
+
+.scadenza-days {
+    min-width: 60px;
+    text-align: center;
+}
+
+.days-expired {
+    color: var(--matrix-danger);
+    font-weight: 600;
+}
+
+.days-critical {
+    color: var(--matrix-warning);
+    font-weight: 600;
+}
+
+.days-ok {
+    color: var(--matrix-success);
+}
+
+.scadenza-actions {
+    min-width: 40px;
+}
+
+.alert-box {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.alert-box.danger {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid var(--matrix-danger);
+    color: var(--matrix-danger);
+}
+
+.alert-box.critical {
+    background: rgba(255, 165, 2, 0.1);
+    border: 1px solid var(--matrix-warning);
+    color: var(--matrix-warning);
+}
+
+.alert-box.warning {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid #ffc107;
+    color: #ffc107;
+}
+
+.alert-box.info {
+    background: rgba(0, 123, 255, 0.1);
+    border: 1px solid #007bff;
+    color: #007bff;
+}
+
+.alert-box i {
+    font-size: 1.2rem;
+    margin-top: 0.1rem;
+}
+
+.alert-box strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.alert-box p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+</style>
+
+{% endblock %}

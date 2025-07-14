@@ -46,7 +46,7 @@ class Veicolo(db.Model):
     # CAMPO NUCLEO
     nucleo = db.Column(db.String(50), default='Via Capitel')
     
-    # 🆕 NUOVO CAMPO UNITÀ OPERATIVA
+    # 🆕 CAMPO UNITÀ OPERATIVA
     unita_operativa = db.Column(db.String(100), default='Cure Primarie ADI Via del Capitel')
     unita_operativa_personalizzata = db.Column(db.String(100))  # Per opzione "Altro"
     
@@ -165,9 +165,11 @@ class Manutenzione(db.Model):
     km_intervento = db.Column(db.Integer, nullable=False)
     tipo_intervento = db.Column(db.String(100), nullable=False)
     descrizione = db.Column(db.Text)
-    costo = db.Column(db.Numeric(10, 2))
-    numero_fattura = db.Column(db.String(50))
+    
+    # 🔄 RINOMINATO: numero_fattura → numero_documento
+    numero_documento = db.Column(db.String(50))
     data_fattura = db.Column(db.Date)
+    
     garanzia_mesi = db.Column(db.Integer, default=0)
     prossima_scadenza_km = db.Column(db.Integer)
     note = db.Column(db.Text)
@@ -180,11 +182,7 @@ class Manutenzione(db.Model):
     
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
     
-    @property
-    def costo_formattato(self):
-        if self.costo:
-            return f"€ {self.costo:.2f}"
-        return "N/A"
+    # ❌ RIMOSSO: campo costo e metodo costo_formattato
 
     def __repr__(self):
         return f'<Manutenzione {self.id} - {self.tipo_intervento}>'
@@ -197,7 +195,6 @@ class Scadenza(db.Model):
     veicolo_id = db.Column(db.Integer, db.ForeignKey('veicoli.id'), nullable=False)
     tipo_scadenza = db.Column(db.String(50), nullable=False)
     data_scadenza = db.Column(db.Date, nullable=False)
-    costo = db.Column(db.Numeric(10, 2))
     stato = db.Column(db.String(20), default='Attiva')
     note = db.Column(db.Text)
     
@@ -209,11 +206,7 @@ class Scadenza(db.Model):
     
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
     
-    @property
-    def costo_formattato(self):
-        if self.costo:
-            return f"€ {self.costo:.2f}"
-        return "N/A"
+    # ❌ RIMOSSO: campo costo e metodo costo_formattato
     
     @property
     def giorni_scadenza(self):
@@ -242,62 +235,60 @@ class Scadenza(db.Model):
         return f'<Scadenza {self.id} - {self.tipo_scadenza}>'
 
 
+# Classe per gestione società di noleggio (opzionale - in caso serva una tabella separata)
+class SocietaNoleggio(db.Model):
+    __tablename__ = 'societa_noleggio'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(200), nullable=False)
+    codice = db.Column(db.String(50), unique=True)
+    referente = db.Column(db.String(100))
+    telefono = db.Column(db.String(20))
+    email = db.Column(db.String(100))
+    note = db.Column(db.Text)
+    attivo = db.Column(db.Boolean, default=True)
+    
+    def __repr__(self):
+        return f'<SocietaNoleggio {self.nome}>'
+
+
+# Modello User per autenticazione con Flask-Login
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(120), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=True)
     
-    # CAMPO NUCLEO - DETERMINA QUALI DATI PUÒ VEDERE
+    # GESTIONE NUCLEI
     nucleo = db.Column(db.String(50), default='Via Capitel')
+    ruolo = db.Column(db.String(20), default='user')  # 'admin', 'user'
     
-    # CAMPO RUOLO - ADMIN PUÒ VEDERE TUTTI I NUCLEI
-    ruolo = db.Column(db.String(20), default='user')  # 'user' o 'admin'
-    
+    # CAMPI AGGIUNTIVI
+    nome = db.Column(db.String(100))
+    cognome = db.Column(db.String(100))
     attivo = db.Column(db.Boolean, default=True)
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
     ultimo_accesso = db.Column(db.DateTime)
     
     def set_password(self, password):
+        """Imposta la password hashata"""
         self.password_hash = generate_password_hash(password)
     
     def check_password(self, password):
+        """Verifica la password"""
         return check_password_hash(self.password_hash, password)
     
     @property
+    def nome_completo(self):
+        if self.nome and self.cognome:
+            return f"{self.nome} {self.cognome}"
+        return self.username
+    
+    @property
     def is_admin(self):
-        """Controlla se l'utente è admin"""
         return self.ruolo == 'admin'
     
-    def can_see_nucleo(self, nucleo_nome):
-        """Controlla se l'utente può vedere dati di un nucleo"""
-        if self.is_admin:
-            return True
-        return self.nucleo == nucleo_nome
-    
-    def get_nuclei_visibili(self):
-        """Restituisce lista nuclei che l'utente può vedere"""
-        if self.is_admin:
-            return Nucleo.query.filter_by(attivo=True).all()
-        else:
-            return Nucleo.query.filter_by(nome=self.nucleo, attivo=True).all()
-
     def __repr__(self):
         return f'<User {self.username}>'
-
-
-class SocietaNoleggio(db.Model):
-    __tablename__ = 'societa_noleggio'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    ragione_sociale = db.Column(db.String(200), nullable=False)
-    partita_iva = db.Column(db.String(11))
-    telefono = db.Column(db.String(20))
-    email = db.Column(db.String(100))
-    indirizzo = db.Column(db.String(200))
-    note = db.Column(db.Text)
-    data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f'<SocietaNoleggio {self.ragione_sociale}>'
