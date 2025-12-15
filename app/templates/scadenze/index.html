@@ -2,6 +2,45 @@
 
 {% block title %}Gestione Scadenze - Matrix Fleet Manager{% endblock %}
 
+{# Stampa e navigazione pagine: sostituisce il blocco print_actions del template base #}
+{% block print_actions %}
+<div class="print-actions" style="margin-bottom: 1rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+    <!-- Stampa pagina completa -->
+    <button class="btn btn-outline-light" type="button" onclick="window.print()">
+        <i class="fas fa-print"></i> Stampa pagina
+    </button>
+    <!-- Stampa selezione -->
+    <button class="btn btn-outline-light" type="button" onclick="printSelectedArea()">
+        <i class="fas fa-cut"></i> Stampa selezione
+    </button>
+    {% if scadenze.pages > 1 %}
+    <div class="pagination" style="display:flex; align-items:center; gap:0.3rem;">
+        {% if scadenze.has_prev %}
+            <a href="{{ url_for('scadenze.index_scadenze', page=scadenze.prev_num, filtro=filtro, stato=filtro_stato, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        {% for p in scadenze.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+                {% if p != scadenze.page %}
+                    <a href="{{ url_for('scadenze.index_scadenze', page=p, filtro=filtro, stato=filtro_stato, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link">{{ p }}</a>
+                {% else %}
+                    <span class="pagination-current">{{ p }}</span>
+                {% endif %}
+            {% else %}
+                <span class="pagination-ellipsis">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if scadenze.has_next %}
+            <a href="{{ url_for('scadenze.index_scadenze', page=scadenze.next_num, filtro=filtro, stato=filtro_stato, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="page-container">
     <div class="page-header">
@@ -57,6 +96,43 @@
                 <i class="fas fa-play-circle"></i> Attive
             </a>
         </div>
+    </div>
+
+    <!-- FILTRI AVANZATI -->
+    <div class="filters-container">
+        <form method="get" class="advanced-filter-form">
+            <div class="filters-group">
+                {# Mantieni il filtro rapido (Visualizza) come campo nascosto per preservare il contesto #}
+                {% if filtro %}
+                    <input type="hidden" name="filtro" value="{{ filtro }}" />
+                {% endif %}
+                <label for="stato" class="filters-label">Stato:</label>
+                <select name="stato" id="stato" class="filter-select">
+                    <option value="">Tutti gli stati</option>
+                    {% for s in stati %}
+                        <option value="{{ s }}" {% if filtro_stato == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                <label for="tipo" class="filters-label">Tipo:</label>
+                <select name="tipo" id="tipo" class="filter-select">
+                    <option value="">Tutti i tipi</option>
+                    {% for t in tipi %}
+                        <option value="{{ t }}" {% if filtro_tipo == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+                <label for="veicolo" class="filters-label">Veicolo:</label>
+                <select name="veicolo" id="veicolo" class="filter-select">
+                    <option value="">Tutti i veicoli</option>
+                    {% for id,nome in veicoli %}
+                        <option value="{{ id }}" {% if filtro_veicolo|int == id %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-filter"></i> Filtra
+                </button>
+                <a href="{{ url_for('scadenze.index_scadenze') }}" class="btn btn-secondary btn-sm">Reset</a>
+            </div>
+        </form>
     </div>
 
     <!-- CARD SCADENZE -->
@@ -137,23 +213,26 @@
                        class="btn-card btn-warning" title="Modifica">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <a href="{{ url_for('scadenze.elimina_scadenza', id=scadenza.id) }}" 
-                       class="btn-card btn-danger" title="Elimina"
-                       onclick="return confirm('Sei sicuro di voler eliminare questa scadenza?')">
-                        <i class="fas fa-trash"></i>
-                    </a>
+                    <form method="POST" action="{{ url_for('scadenze.elimina_scadenza', id=scadenza.id) }}" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questa scadenza?');">
+                        <button type="submit" class="btn-card btn-danger" title="Elimina">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
                 </div>
                 
-                {% if scadenza.giorni_scadenza <= 7 and scadenza.giorni_scadenza > 0 %}
-                <div class="alert-message">
-                    <i class="fas fa-bell"></i>
-                    <span>Programmare intervento!</span>
-                </div>
-                {% elif scadenza.giorni_scadenza <= 0 %}
-                <div class="alert-message expired">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span>Intervento urgente richiesto!</span>
-                </div>
+                {# Mostra avvisi solo per scadenze non rinnovate #}
+                {% if scadenza.stato != 'Rinnovata' %}
+                    {% if scadenza.giorni_scadenza <= 7 and scadenza.giorni_scadenza > 0 %}
+                    <div class="alert-message">
+                        <i class="fas fa-bell"></i>
+                        <span>Programmare intervento!</span>
+                    </div>
+                    {% elif scadenza.giorni_scadenza <= 0 %}
+                    <div class="alert-message expired">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Intervento urgente richiesto!</span>
+                    </div>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>

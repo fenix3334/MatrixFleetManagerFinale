@@ -12,7 +12,7 @@
             </div>
             <div class="detail-title-info">
                 <h1 class="detail-title-main">{{ fornitore.ragione_sociale }}</h1>
-                <p class="detail-subtitle">Scheda completa del fornitore</p>
+                <p class="detail-subtitle">Scheda completa del fornitore - Tutti i dati in sola lettura</p>
             </div>
         </div>
         <div class="detail-actions-header">
@@ -46,16 +46,28 @@
                     <span class="detail-label">Ragione Sociale:</span>
                     <span class="detail-value company-name">{{ fornitore.ragione_sociale }}</span>
                 </div>
+                {% if fornitore.partita_iva %}
+                <div class="detail-item">
+                    <span class="detail-label">Partita IVA:</span>
+                    <span class="detail-value tax-code">
+                        <i class="fas fa-receipt"></i>
+                        {{ fornitore.partita_iva }}
+                    </span>
+                </div>
+                {% endif %}
                 {% if fornitore.codice_fiscale %}
                 <div class="detail-item">
                     <span class="detail-label">Codice Fiscale:</span>
-                    <span class="detail-value">{{ fornitore.codice_fiscale }}</span>
+                    <span class="detail-value tax-code">
+                        <i class="fas fa-id-card"></i>
+                        {{ fornitore.codice_fiscale }}
+                    </span>
                 </div>
                 {% endif %}
                 {% if fornitore.referente %}
                 <div class="detail-item">
                     <span class="detail-label">Referente:</span>
-                    <span class="detail-value">
+                    <span class="detail-value referent-info">
                         <i class="fas fa-user"></i>
                         {{ fornitore.referente }}
                     </span>
@@ -63,80 +75,58 @@
                 {% endif %}
                 <div class="detail-item">
                     <span class="detail-label">Stato:</span>
-                    <span class="status-badge status-{{ 'attivo' if fornitore.attivo else 'non-attivo' }}">
+                    <span class="status-badge {% if fornitore.attivo %}status-attivo{% else %}status-inattivo{% endif %}">
                         <i class="fas fa-circle"></i>
-                        {{ 'Attivo' if fornitore.attivo else 'Non Attivo' }}
+                        {% if fornitore.attivo %}Attivo{% else %}Inattivo{% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Nucleo:</span>
+                    <span class="detail-value nucleo-badge">
+                        <i class="fas fa-building"></i>
+                        {{ fornitore.nucleo }}
                     </span>
                 </div>
             </div>
         </div>
 
-        <!-- SEZIONE 2: DATI FISCALI -->
+        <!-- SEZIONE 2: SETTORI DI ATTIVITÀ -->
         <div class="detail-card" data-section="2">
             <div class="card-header">
                 <div class="card-icon">
-                    <i class="fas fa-calculator"></i>
+                    <i class="fas fa-industry"></i>
                 </div>
                 <div class="card-title">
-                    <h3>Dati Fiscali</h3>
-                    <p>Informazioni fiscali e ubicazione</p>
+                    <h3>Settori di Attività</h3>
+                    <p>Aree di competenza</p>
                 </div>
             </div>
             <div class="card-content">
-                {% if fornitore.partita_iva %}
+                {% set settori = fornitore.settori_lista %}
+                {% if settori %}
+                    {% for settore in settori %}
+                    <div class="detail-item">
+                        <span class="detail-label">Settore {{ loop.index }}:</span>
+                        <span class="sector-badge">
+                            <i class="fas fa-tag"></i>
+                            {{ settore }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
                 <div class="detail-item">
-                    <span class="detail-label">Partita IVA:</span>
-                    <span class="detail-value tax-code">
-                        <i class="fas fa-hashtag"></i>
-                        {{ fornitore.partita_iva }}
+                    <span class="detail-label">Settori:</span>
+                    <span class="detail-value text-muted">
+                        <i class="fas fa-times-circle"></i>
+                        Nessun settore specificato
                     </span>
                 </div>
                 {% endif %}
-                <div class="detail-item">
-                    <span class="detail-label">Nucleo:</span>
-                    <span class="detail-value">{{ fornitore.nucleo }}</span>
-                </div>
             </div>
         </div>
 
-        <!-- SEZIONE 3: INDIRIZZO -->
-        {% if fornitore.indirizzo or fornitore.citta %}
+        <!-- SEZIONE 3: CONTATTI TELEFONICI -->
         <div class="detail-card" data-section="3">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="fas fa-map-marked-alt"></i>
-                </div>
-                <div class="card-title">
-                    <h3>Indirizzo</h3>
-                    <p>Ubicazione e recapito postale</p>
-                </div>
-            </div>
-            <div class="card-content">
-                {% if fornitore.indirizzo %}
-                <div class="detail-item">
-                    <span class="detail-label">Indirizzo:</span>
-                    <span class="detail-value">
-                        <i class="fas fa-road"></i>
-                        {{ fornitore.indirizzo }}
-                    </span>
-                </div>
-                {% endif %}
-                <div class="detail-item">
-                    <span class="detail-label">Località:</span>
-                    <span class="detail-value">
-                        <i class="fas fa-map-marker-alt"></i>
-                        {{ fornitore.citta }}
-                        {% if fornitore.cap %} - {{ fornitore.cap }}{% endif %}
-                        {% if fornitore.provincia %} ({{ fornitore.provincia }}){% endif %}
-                    </span>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- SEZIONE 4: CONTATTI TELEFONICI -->
-        {% if fornitore.telefono or fornitore.telefono_2 or fornitore.telefono_3 %}
-        <div class="detail-card" data-section="4">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="fas fa-phone"></i>
@@ -147,46 +137,33 @@
                 </div>
             </div>
             <div class="card-content">
-                {% if fornitore.telefono %}
+                {% set telefoni = fornitore.telefoni_lista %}
+                {% if telefoni %}
+                    {% for telefono in telefoni %}
+                    <div class="detail-item">
+                        <span class="detail-label">Telefono {{ loop.index }}:</span>
+                        <span class="detail-value">
+                            <a href="tel:{{ telefono }}" class="contact-link">
+                                <i class="fas fa-phone"></i>
+                                {{ telefono }}
+                            </a>
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
                 <div class="detail-item">
-                    <span class="detail-label">Telefono Principale:</span>
-                    <span class="detail-value">
-                        <a href="tel:{{ fornitore.telefono }}" class="contact-link">
-                            <i class="fas fa-phone"></i>
-                            {{ fornitore.telefono }}
-                        </a>
-                    </span>
-                </div>
-                {% endif %}
-                {% if fornitore.telefono_2 %}
-                <div class="detail-item">
-                    <span class="detail-label">Telefono 2:</span>
-                    <span class="detail-value">
-                        <a href="tel:{{ fornitore.telefono_2 }}" class="contact-link">
-                            <i class="fas fa-phone-alt"></i>
-                            {{ fornitore.telefono_2 }}
-                        </a>
-                    </span>
-                </div>
-                {% endif %}
-                {% if fornitore.telefono_3 %}
-                <div class="detail-item">
-                    <span class="detail-label">Telefono 3:</span>
-                    <span class="detail-value">
-                        <a href="tel:{{ fornitore.telefono_3 }}" class="contact-link">
-                            <i class="fas fa-mobile-alt"></i>
-                            {{ fornitore.telefono_3 }}
-                        </a>
+                    <span class="detail-label">Telefoni:</span>
+                    <span class="detail-value text-muted">
+                        <i class="fas fa-times-circle"></i>
+                        Nessun telefono disponibile
                     </span>
                 </div>
                 {% endif %}
             </div>
         </div>
-        {% endif %}
 
-        <!-- SEZIONE 5: CONTATTI EMAIL -->
-        {% if fornitore.email or fornitore.email_2 or fornitore.email_3 %}
-        <div class="detail-card" data-section="5">
+        <!-- SEZIONE 4: CONTATTI EMAIL -->
+        <div class="detail-card" data-section="4">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="fas fa-envelope"></i>
@@ -197,85 +174,111 @@
                 </div>
             </div>
             <div class="card-content">
-                {% if fornitore.email %}
+                {% set emails = fornitore.email_lista %}
+                {% if emails %}
+                    {% for email in emails %}
+                    <div class="detail-item">
+                        <span class="detail-label">Email {{ loop.index }}:</span>
+                        <span class="detail-value">
+                            <a href="mailto:{{ email }}" class="contact-link">
+                                <i class="fas fa-envelope"></i>
+                                {{ email }}
+                            </a>
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
                 <div class="detail-item">
-                    <span class="detail-label">Email Principale:</span>
-                    <span class="detail-value">
-                        <a href="mailto:{{ fornitore.email }}" class="contact-link">
-                            <i class="fas fa-envelope"></i>
-                            {{ fornitore.email }}
-                        </a>
-                    </span>
-                </div>
-                {% endif %}
-                {% if fornitore.email_2 %}
-                <div class="detail-item">
-                    <span class="detail-label">Email 2:</span>
-                    <span class="detail-value">
-                        <a href="mailto:{{ fornitore.email_2 }}" class="contact-link">
-                            <i class="fas fa-envelope-open"></i>
-                            {{ fornitore.email_2 }}
-                        </a>
-                    </span>
-                </div>
-                {% endif %}
-                {% if fornitore.email_3 %}
-                <div class="detail-item">
-                    <span class="detail-label">Email 3:</span>
-                    <span class="detail-value">
-                        <a href="mailto:{{ fornitore.email_3 }}" class="contact-link">
-                            <i class="fas fa-at"></i>
-                            {{ fornitore.email_3 }}
-                        </a>
+                    <span class="detail-label">Email:</span>
+                    <span class="detail-value text-muted">
+                        <i class="fas fa-times-circle"></i>
+                        Nessuna email disponibile
                     </span>
                 </div>
                 {% endif %}
             </div>
         </div>
-        {% endif %}
 
-        <!-- SEZIONE 6: SETTORI DI ATTIVITÀ -->
-        {% if fornitore.settore or fornitore.settore_2 or fornitore.settore_3 or fornitore.settore_personalizzato %}
-        <div class="detail-card full-width" data-section="6">
+        <!-- SEZIONE 5: INDIRIZZO COMPLETO -->
+        <div class="detail-card" data-section="5">
             <div class="card-header">
                 <div class="card-icon">
-                    <i class="fas fa-tags"></i>
+                    <i class="fas fa-map-marker-alt"></i>
                 </div>
                 <div class="card-title">
-                    <h3>Settori di Attività</h3>
-                    <p>Aree di competenza e servizi</p>
+                    <h3>Indirizzo</h3>
+                    <p>Sede legale e operativa</p>
                 </div>
             </div>
             <div class="card-content">
-                <div class="sectors-grid">
-                    {% if fornitore.settore %}
-                    <div class="sector-badge sector-primary">
-                        <i class="fas fa-tag"></i>
-                        {{ fornitore.settore }}
-                    </div>
-                    {% endif %}
-                    {% if fornitore.settore_2 %}
-                    <div class="sector-badge sector-secondary">
-                        <i class="fas fa-tag"></i>
-                        {{ fornitore.settore_2 }}
-                    </div>
-                    {% endif %}
-                    {% if fornitore.settore_3 %}
-                    <div class="sector-badge sector-tertiary">
-                        <i class="fas fa-tag"></i>
-                        {{ fornitore.settore_3 }}
-                    </div>
-                    {% endif %}
-                    {% if fornitore.settore_personalizzato %}
-                    <div class="sector-badge sector-custom">
-                        <i class="fas fa-plus"></i>
-                        {{ fornitore.settore_personalizzato }}
-                    </div>
-                    {% endif %}
+                {% if fornitore.indirizzo %}
+                <div class="detail-item">
+                    <span class="detail-label">Via/Piazza:</span>
+                    <span class="detail-value address-info">
+                        <i class="fas fa-road"></i>
+                        {{ fornitore.indirizzo }}
+                    </span>
+                </div>
+                {% endif %}
+                {% if fornitore.citta %}
+                <div class="detail-item">
+                    <span class="detail-label">Città:</span>
+                    <span class="detail-value city-info">
+                        <i class="fas fa-city"></i>
+                        {{ fornitore.citta }}
+                        {% if fornitore.provincia %}({{ fornitore.provincia }}){% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                {% if fornitore.cap %}
+                <div class="detail-item">
+                    <span class="detail-label">CAP:</span>
+                    <span class="detail-value cap-info">
+                        <i class="fas fa-map-pin"></i>
+                        {{ fornitore.cap }}
+                    </span>
+                </div>
+                {% endif %}
+                {% if not fornitore.indirizzo and not fornitore.citta and not fornitore.cap %}
+                <div class="detail-item">
+                    <span class="detail-label">Indirizzo:</span>
+                    <span class="detail-value text-muted">
+                        <i class="fas fa-times-circle"></i>
+                        Indirizzo non disponibile
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SEZIONE 6: INFORMAZIONI AGGIUNTIVE -->
+        <div class="detail-card" data-section="6">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Informazioni Aggiuntive</h3>
+                    <p>Dati amministrativi</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Data Creazione:</span>
+                    <span class="detail-value">
+                        <i class="fas fa-calendar-plus"></i>
+                        {{ fornitore.data_creazione.strftime('%d/%m/%Y %H:%M') if fornitore.data_creazione else 'N/A' }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">ID Sistema:</span>
+                    <span class="detail-value system-id">
+                        <i class="fas fa-hashtag"></i>
+                        {{ fornitore.id }}
+                    </span>
                 </div>
             </div>
         </div>
-        {% endif %}
 
         <!-- SEZIONE 7: NOTE -->
         {% if fornitore.note %}
@@ -291,7 +294,63 @@
             </div>
             <div class="card-content">
                 <div class="notes-content">
-                    {{ fornitore.note }}
+                    {{ fornitore.note|replace('\n', '<br>')|safe }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SEZIONE 8: MANUTENZIONI ASSOCIATE -->
+        {% if fornitore.manutenzioni %}
+        <div class="detail-card full-width" data-section="8">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Manutenzioni Associate</h3>
+                    <p>Interventi eseguiti da questo fornitore</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="related-list">
+                    {% for manutenzione in fornitore.manutenzioni[:10] %}
+                    <div class="related-item">
+                        <div class="related-info">
+                            <div class="related-title">
+                                <i class="fas fa-wrench"></i>
+                                {{ manutenzione.tipo_intervento }}
+                            </div>
+                            <div class="related-details">
+                                <span class="related-vehicle">{{ manutenzione.veicolo.targa }}</span>
+                                <span class="related-date">{{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}</span>
+                                <span class="related-km">{{ "{:,}".format(manutenzione.km_intervento).replace(',', '.') }} km</span>
+                                <span class="status-badge status-{{ manutenzione.stato|lower|replace(' ', '-') }}">
+                                    {{ manutenzione.stato }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="related-actions">
+                            <a href="{{ url_for('manutenzioni.dettaglio_manutenzione', id=manutenzione.id) }}" class="btn-related">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if fornitore.manutenzioni|length > 10 %}
+                <div class="view-all-link">
+                    <span class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Mostrate le prime 10 manutenzioni di {{ fornitore.manutenzioni|length }} totali
+                    </span>
+                </div>
+                {% endif %}
+                <div class="view-all-link">
+                    <a href="{{ url_for('manutenzioni.index_manutenzioni') }}?fornitore={{ fornitore.id }}" class="btn-view-all">
+                        <i class="fas fa-list"></i>
+                        Vedi tutte le manutenzioni
+                    </a>
                 </div>
             </div>
         </div>
@@ -300,7 +359,8 @@
 </div>
 
 <style>
-/* === DETTAGLIO MODERNO === */
+/* === DETTAGLIO COMPLETO FORNITORE === */
+
 .modern-detail-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -504,13 +564,65 @@
 .company-name {
     color: #00ff41;
     font-weight: 700;
+    font-size: 16px;
 }
 
 .tax-code {
     color: #00ff41;
     font-family: 'Orbitron', monospace;
+    background: rgba(0, 255, 65, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
 }
 
+.referent-info {
+    color: #7fff7f;
+    font-weight: 600;
+}
+
+.nucleo-badge {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.system-id {
+    color: #999;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+/* Settori */
+.sector-badge {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Indirizzi */
+.address-info, .city-info, .cap-info {
+    color: #7fff7f;
+    font-weight: 600;
+}
+
+.cap-info {
+    font-family: 'Courier New', monospace;
+    background: rgba(0, 255, 65, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Status Badges */
 .status-badge {
     padding: 6px 12px;
     border-radius: 20px;
@@ -521,64 +633,168 @@
     gap: 5px;
 }
 
-.status-attivo { background: rgba(40, 167, 69, 0.2); color: #28a745; border: 1px solid #28a745; }
-.status-non-attivo { background: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid #dc3545; }
+.status-attivo {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.4);
+}
+
+.status-inattivo {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+.status-fatto {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.4);
+}
+
+.status-da-fare {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.4);
+}
 
 /* Contact Links */
 .contact-link {
     color: #00ff41;
     text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
     transition: all 0.3s ease;
 }
 
 .contact-link:hover {
     color: #7fff7f;
-    transform: translateX(3px);
+    transform: translateX(2px);
 }
 
-/* Sectors Grid */
-.sectors-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.sector-badge {
-    padding: 12px 16px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.sector-badge:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 255, 65, 0.2);
-}
-
-.sector-primary { background: rgba(0, 255, 65, 0.2); color: #00ff41; border: 1px solid rgba(0, 255, 65, 0.5); }
-.sector-secondary { background: rgba(0, 191, 255, 0.2); color: #00bfff; border: 1px solid rgba(0, 191, 255, 0.5); }
-.sector-tertiary { background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.5); }
-.sector-custom { background: rgba(138, 43, 226, 0.2); color: #8a2be2; border: 1px solid rgba(138, 43, 226, 0.5); }
-
-/* Notes Content */
+/* Note Content */
 .notes-content {
-    background: rgba(0, 40, 0, 0.3);
+    background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(0, 255, 65, 0.2);
     border-radius: 8px;
     padding: 15px;
-    color: #ccc;
+    color: #fff;
     line-height: 1.6;
+    font-size: 14px;
 }
 
-/* === RESPONSIVE === */
+/* Related Lists */
+.related-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.related-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.related-item:hover {
+    border-color: rgba(0, 255, 65, 0.4);
+    background: rgba(0, 255, 65, 0.05);
+}
+
+.related-info {
+    flex: 1;
+}
+
+.related-title {
+    color: #00ff41;
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.related-details {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-size: 12px;
+}
+
+.related-vehicle {
+    color: #00ff41;
+    font-family: 'Orbitron', monospace;
+    font-weight: 600;
+    background: rgba(0, 255, 65, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.related-date {
+    color: #999;
+}
+
+.related-km {
+    color: #7fff7f;
+    font-weight: 600;
+}
+
+.related-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-related {
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    color: #00ff41;
+    padding: 6px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-related:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: translateY(-1px);
+}
+
+.view-all-link {
+    text-align: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.btn-view-all {
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    color: #00ff41;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.btn-view-all:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Text Muted */
+.text-muted {
+    color: #999;
+    font-style: italic;
+}
+
+/* Responsive */
 @media (max-width: 1200px) {
     .detail-sections-grid {
         grid-template-columns: 1fr;
@@ -596,32 +812,27 @@
     
     .detail-header-modern {
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
         text-align: center;
     }
     
-    .detail-title-section {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
     .detail-actions-header {
-        width: 100%;
         justify-content: center;
     }
     
     .detail-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
+        gap: 5px;
+    }
+    
+    .detail-label {
+        min-width: auto;
+        font-size: 12px;
     }
     
     .detail-value {
         text-align: left;
-    }
-    
-    .sectors-grid {
-        grid-template-columns: 1fr;
     }
 }
 </style>

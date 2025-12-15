@@ -2,6 +2,42 @@
 
 {% block title %}Gestione Manutenzioni - Matrix Fleet Manager{% endblock %}
 
+{% block print_actions %}
+<div class="print-actions" style="margin-bottom: 1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+    <button class="btn btn-outline-light" type="button" onclick="window.print()">
+        <i class="fas fa-print"></i> Stampa pagina
+    </button>
+    <button class="btn btn-outline-light" type="button" onclick="printSelectedArea()">
+        <i class="fas fa-cut"></i> Stampa selezione
+    </button>
+    {% if manutenzioni.pages > 1 %}
+    <div class="pagination" style="display:flex; align-items:center; gap:0.3rem;">
+        {% if manutenzioni.has_prev %}
+            <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.prev_num, stato=stato_filter, filtro_veicolo=filtro_veicolo, tipo=tipo_filter) }}" class="pagination-link">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        {% for page_num in manutenzioni.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != manutenzioni.page %}
+                    <a href="{{ url_for('manutenzioni.index_manutenzioni', page=page_num, stato=stato_filter, filtro_veicolo=filtro_veicolo, tipo=tipo_filter) }}" class="pagination-link">{{ page_num }}</a>
+                {% else %}
+                    <span class="pagination-current">{{ page_num }}</span>
+                {% endif %}
+            {% else %}
+                <span class="pagination-ellipsis">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if manutenzioni.has_next %}
+            <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.next_num, stato=stato_filter, filtro_veicolo=filtro_veicolo, tipo=tipo_filter) }}" class="pagination-link">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="page-container">
     <div class="page-header">
@@ -60,9 +96,47 @@
         </div>
     </div>
 
+    <!-- FILTRI AVANZATI -->
+    <div class="filters-container">
+        <form method="get" class="advanced-filter-form">
+            <div class="filters-group">
+                <!-- Mantieni lo stato come campo nascosto per preservare il filtro corrente -->
+                {% if filtro_stato %}
+                    <input type="hidden" name="stato" value="{{ filtro_stato }}" />
+                {% endif %}
+                <label for="tipo" class="filters-label">Tipo:</label>
+                <select name="tipo" id="tipo" class="filter-select">
+                    <option value="">Tutti i tipi</option>
+                    {% for t in tipi %}
+                        <option value="{{ t }}" {% if filtro_tipo == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+                <label for="veicolo" class="filters-label">Veicolo:</label>
+                <select name="veicolo" id="veicolo" class="filter-select">
+                    <option value="">Tutti i veicoli</option>
+                    {% for id, nome in veicoli %}
+                        <option value="{{ id }}" {% if filtro_veicolo|int == id %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-filter"></i> Filtra
+                </button>
+                <a href="{{ url_for('manutenzioni.index_manutenzioni') }}" class="btn btn-secondary btn-sm">Reset</a>
+                <!-- Link export Excel -->
+                <a href="{{ url_for('manutenzioni.export_manutenzioni', stato=filtro_stato, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="btn btn-info btn-sm">
+                    <i class="fas fa-file-excel"></i> Export
+                </a>
+                <!-- Toggle colonne -->
+                <button type="button" id="toggleColumnsBtnManutenzioni" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-columns"></i> Larghezza Colonne
+                </button>
+            </div>
+        </form>
+    </div>
+
     <!-- TABELLA MANUTENZIONI -->
     <div class="maintenance-table-container">
-        <table class="maintenance-table">
+        <table class="maintenance-table resizable-table">
             <thead>
                 <tr>
                     <th class="col-vehicle">Veicolo</th>
@@ -147,11 +221,11 @@
                                class="btn-action btn-warning" title="Modifica">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{{ url_for('manutenzioni.elimina_manutenzione', id=manutenzione.id) }}" 
-                               class="btn-action btn-danger" title="Elimina"
-                               onclick="return confirm('Sei sicuro di voler eliminare questa manutenzione?')">
-                                <i class="fas fa-trash"></i>
-                            </a>
+                            <form method="POST" action="{{ url_for('manutenzioni.elimina_manutenzione', id=manutenzione.id) }}" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questa manutenzione?');">
+                                <button type="submit" class="btn-action btn-danger" title="Elimina">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
                         </div>
                     </td>
                 </tr>
@@ -191,7 +265,7 @@
     <div class="pagination-container">
         <div class="pagination">
             {% if manutenzioni.has_prev %}
-                <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.prev_num, stato=stato_filter) }}" class="pagination-link">
+                <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.prev_num, stato=filtro_stato, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link">
                     <i class="fas fa-chevron-left"></i>
                 </a>
             {% endif %}
@@ -199,7 +273,7 @@
             {% for page_num in manutenzioni.iter_pages() %}
                 {% if page_num %}
                     {% if page_num != manutenzioni.page %}
-                        <a href="{{ url_for('manutenzioni.index_manutenzioni', page=page_num, stato=stato_filter) }}" class="pagination-link">{{ page_num }}</a>
+                        <a href="{{ url_for('manutenzioni.index_manutenzioni', page=page_num, stato=filtro_stato, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link">{{ page_num }}</a>
                     {% else %}
                         <span class="pagination-link active">{{ page_num }}</span>
                     {% endif %}
@@ -209,7 +283,7 @@
             {% endfor %}
             
             {% if manutenzioni.has_next %}
-                <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.next_num, stato=stato_filter) }}" class="pagination-link">
+                <a href="{{ url_for('manutenzioni.index_manutenzioni', page=manutenzioni.next_num, stato=filtro_stato, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link">
                     <i class="fas fa-chevron-right"></i>
                 </a>
             {% endif %}
@@ -627,6 +701,34 @@
         flex-direction: column;
     }
 }
-</style>
+    </style>
+
+    <!-- Script per toggle larghezza colonne -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const table = document.querySelector('.maintenance-table');
+        const btn = document.getElementById('toggleColumnsBtnManutenzioni');
+        const key = 'manutenzioniWideColumns';
+        if (localStorage.getItem(key) === 'true') {
+            table.classList.add('expanded');
+        }
+        if (btn) {
+            btn.addEventListener('click', function() {
+                table.classList.toggle('expanded');
+                localStorage.setItem(key, table.classList.contains('expanded'));
+            });
+        }
+    });
+    </script>
+    <style>
+    .maintenance-table.expanded {
+        table-layout: auto;
+    }
+    .maintenance-table.expanded th,
+    .maintenance-table.expanded td {
+        white-space: normal;
+        word-break: break-word;
+    }
+    </style>
 
 {% endblock %}

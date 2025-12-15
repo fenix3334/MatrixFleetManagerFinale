@@ -1,0 +1,38 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="mt-4">Scheda Kilometrica - {{ mese }}/{{ anno }}</h1>
+<form method="POST">
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Veicolo</th>
+                <th>Km Iniziali</th>
+                <th>Km Finali</th>
+                <th>Km Percorsi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for veicolo in veicoli %}
+            <tr>
+                <td>{{ veicolo.targa }}</td>
+                <td>
+                    <input type="number" name="km_iniziali_{{ veicolo.id }}" class="form-control"
+                           value="{{ dati_schede[veicolo.id].km_iniziali if dati_schede[veicolo.id] else '' }}">
+                </td>
+                <td>
+                    <input type="number" name="km_finali_{{ veicolo.id }}" class="form-control"
+                           value="{{ dati_schede[veicolo.id].km_finali if dati_schede[veicolo.id] else '' }}">
+                </td>
+                <td>
+                    {% if dati_schede[veicolo.id] and dati_schede[veicolo.id].km_iniziali is not none and dati_schede[veicolo.id].km_finali is not none %}
+                        {{ dati_schede[veicolo.id].km_finali - dati_schede[veicolo.id].km_iniziali }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary">Salva</button>
+</form>
+{% endblock %}

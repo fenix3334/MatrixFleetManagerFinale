@@ -1,0 +1,74 @@
+
+{% extends "base.html" %}
+{% block content %}
+<h2>Scheda Kilometrica - {{ nome_mese }} {{ anno }}</h2>
+
+<!-- Pulsante per espandere/restringere le colonne -->
+<div class="mb-2">
+    <button type="button" id="toggleColumnsBtnScheda" class="btn btn-outline-light btn-sm">
+        <i class="fas fa-arrows-left-right"></i> Larghezza colonne
+    </button>
+</div>
+<form method="post">
+<table class="km-table">
+    <thead>
+        <tr>
+            <th>Veicolo</th>
+            <th>Targa</th>
+            <th>Km Iniziali</th>
+            <th>Km Finali</th>
+            <th>Km Percorsi</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in data %}
+        <tr>
+            <!-- Display the vehicle brand and model instead of an undefined 'nome' field. -->
+            <td>{{ r.veicolo.marca }} {{ r.veicolo.modello }}</td>
+            <td>{{ r.veicolo.targa }}</td>
+            <td><input type="number" name="km_iniziali_{{ r.veicolo.id }}" value="{{ r.km_iniziali }}" class="form-control" /></td>
+            <td><input type="number" name="km_finali_{{ r.veicolo.id }}" value="{{ r.km_finali }}" class="form-control" /></td>
+            <td>{{ r.km_percorsi }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<button type="submit" class="btn btn-success">Salva</button>
+<a class="btn btn-outline-light" href="{{ url_for('scheda_km.export_excel', anno=anno, mese=mese) }}">Esporta Excel</a>
+        {# Link al riepilogo trimestrale: determina il trimestre in base al mese. #}
+        {# Link al riepilogo trimestrale diretto: non visualizza più il dettaglio dei singoli mesi #}
+        <a class="btn btn-outline-light" href="{{ url_for('scheda_km.scheda_km_trimestre_sheet', anno=anno, q=trimestre) }}">Vai al trimestre</a>
+<a class="btn btn-secondary" href="{{ url_for('scheda_km.select_scheda_km') }}">Torna alla selezione</a>
+</form>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('toggleColumnsBtnScheda');
+    const table = document.querySelector('.km-table');
+    // Applica stato salvato dal localStorage
+    const stored = localStorage.getItem('kmTableExpanded');
+    if (stored === 'true') {
+        table.classList.add('expanded-columns');
+    }
+    btn.addEventListener('click', function() {
+        table.classList.toggle('expanded-columns');
+        const expanded = table.classList.contains('expanded-columns');
+        localStorage.setItem('kmTableExpanded', expanded);
+    });
+});
+</script>
+<style>
+/* Stile base: colonne compatte */
+.km-table th, .km-table td {
+    white-space: nowrap;
+}
+/* Quando espanso, permetti il wrap del testo */
+.km-table.expanded-columns th, .km-table.expanded-columns td {
+    white-space: normal;
+    word-break: break-word;
+}
+</style>
+{% endblock %}

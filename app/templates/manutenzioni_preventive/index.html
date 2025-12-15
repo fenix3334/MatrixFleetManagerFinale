@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}Manutenzioni Preventive - Matrix Fleet Manager{% endblock %}
+
+{% block print_actions %}
+<div class="print-actions" style="margin-bottom: 1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+    <button class="btn btn-outline-light" type="button" onclick="window.print()">
+        <i class="fas fa-print"></i> Stampa pagina
+    </button>
+    <button class="btn btn-outline-light" type="button" onclick="printSelectedArea()">
+        <i class="fas fa-cut"></i> Stampa selezione
+    </button>
+    {% if preventive.pages > 1 %}
+    <div class="pagination" style="display:flex; align-items:center; gap:0.3rem;">
+        {% if preventive.has_prev %}
+            <a href="{{ url_for('manutenzioni_preventive.index_preventive', page=preventive.prev_num, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        {% for page_num in preventive.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != preventive.page %}
+                    <a href="{{ url_for('manutenzioni_preventive.index_preventive', page=page_num, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link">{{ page_num }}</a>
+                {% else %}
+                    <span class="pagination-current">{{ page_num }}</span>
+                {% endif %}
+            {% else %}
+                <span class="pagination-ellipsis">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if preventive.has_next %}
+            <a href="{{ url_for('manutenzioni_preventive.index_preventive', page=preventive.next_num, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-calendar-alt"></i>
+            MANUTENZIONI PREVENTIVE
+        </h1>
+        <div class="page-actions">
+            <a href="{{ url_for('manutenzioni_preventive.aggiungi_preventiva') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nuova Programmazione
+            </a>
+        </div>
+    </div>
+
+    <!-- INFO NUCLEO -->
+    {% if nucleo_info %}
+    <div class="nucleo-info-banner">
+        <div class="nucleo-badge-info">
+            {% if nucleo_info.is_admin %}
+                <i class="fas fa-crown"></i>
+                <span>Visualizzazione: {{ nucleo_info.nome }}</span>
+            {% else %}
+                <i class="fas fa-building"></i>
+                <span>Nucleo: {{ nucleo_info.nome }}</span>
+            {% endif %}
+        </div>
+        <div class="nucleo-stats-info">
+            <span class="stat-info">
+                <i class="fas fa-calendar-alt"></i>
+                {{ stats.totale }} programmazioni
+            </span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- FILTRI AVANZATI -->
+    <div class="filters-container">
+        <form method="get" class="advanced-filter-form">
+            <div class="filters-group">
+                <label for="tipo" class="filters-label">Tipo:</label>
+                <select name="tipo" id="tipo" class="filter-select">
+                    <option value="">Tutti i tipi</option>
+                    {% for t in tipi %}
+                        <option value="{{ t }}" {% if filtro_tipo == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+                <label for="veicolo" class="filters-label">Veicolo:</label>
+                <select name="veicolo" id="veicolo" class="filter-select">
+                    <option value="">Tutti i veicoli</option>
+                    {% for id, nome in veicoli %}
+                        <option value="{{ id }}" {% if filtro_veicolo|int == id %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-filter"></i> Filtra
+                </button>
+                <a href="{{ url_for('manutenzioni_preventive.index_preventive') }}" class="btn btn-secondary btn-sm">
+                    Reset
+                </a>
+                <a href="{{ url_for('manutenzioni_preventive.export_preventive', tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="btn btn-info btn-sm">
+                    <i class="fas fa-file-excel"></i> Export
+                </a>
+                <button type="button" id="toggleColumnsBtn" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-columns"></i> Larghezza Colonne
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- TABELLA MANUTENZIONI PREVENTIVE -->
+    <div class="maintenance-table-container">
+        <table class="maintenance-table resizable-table">
+            <thead>
+                <tr class="maintenance-row">
+                    <th class="col-vehicle">Veicolo</th>
+                    <th class="col-type">Intervento</th>
+                    <th class="col-interval">Intervallo</th>
+                    <th class="col-last">Ultimo</th>
+                    <th class="col-next">Prossimo</th>
+                    <th class="col-notes">Note</th>
+                    <th class="col-actions">Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mp in preventive.items %}
+                <tr class="maintenance-row">
+                    <td class="col-vehicle">
+                        <div class="vehicle-info">
+                            <div class="vehicle-plate">{{ mp.veicolo.targa }}</div>
+                            <div class="vehicle-model">{{ mp.veicolo.marca }} {{ mp.veicolo.modello }}</div>
+                        </div>
+                    </td>
+                    <td class="col-type">
+                        <div class="maintenance-type">
+                            <i class="fas fa-wrench"></i>
+                            <span>{{ mp.tipo_intervento }}</span>
+                        </div>
+                    </td>
+                    <td class="col-interval">
+                        <div>
+                            {% if mp.intervallo_km %}
+                                <span>{{ mp.intervallo_km }} km</span>{% if mp.intervallo_mesi %} / {% endif %}
+                            {% endif %}
+                            {% if mp.intervallo_mesi %}
+                                <span>{{ mp.intervallo_mesi }} mesi</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="col-last">
+                        <div>
+                            {% if mp.ultimo_km %}
+                                <span>{{ mp.ultimo_km }} km</span>{% if mp.ultima_data %} - {% endif %}
+                            {% endif %}
+                            {% if mp.ultima_data %}
+                                <span>{{ mp.ultima_data.strftime('%d/%m/%Y') }}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="col-next">
+                        <div>
+                            {% set next_km = mp.prossima_scadenza_km %}
+                            {% set next_date = mp.prossima_scadenza_data %}
+                            {% if next_km %}
+                                <span>{{ next_km }} km</span>{% if next_date %} / {% endif %}
+                            {% endif %}
+                            {% if next_date %}
+                                <span>{{ next_date.strftime('%d/%m/%Y') }}</span>
+                            {% endif %}
+                            {% if not next_km and not next_date %}
+                                <span class="text-muted">N/D</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="col-notes">
+                        {% if mp.note %}
+                            <span>{{ mp.note[:50] }}{% if mp.note|length > 50 %}...{% endif %}</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="col-actions">
+                        <div class="action-buttons">
+                            <!-- Log -->
+                            <a href="{{ url_for('manutenzioni_preventive.cronologia_preventiva', id=mp.id) }}" class="btn-action btn-info" title="Cronologia">
+                                <i class="fas fa-history"></i>
+                            </a>
+                            <a href="{{ url_for('manutenzioni_preventive.modifica_preventiva', id=mp.id) }}" class="btn-action btn-warning" title="Modifica">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('manutenzioni_preventive.elimina_preventiva', id=mp.id) }}" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questa programmazione?');">
+                                <button type="submit" class="btn-action btn-danger" title="Elimina">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="empty-state-maintenance">
+                        <div class="empty-content">
+                            <i class="fas fa-calendar-alt"></i>
+                            <h3>Nessuna manutenzione preventiva registrata</h3>
+                            <p>Aggiungi una nuova programmazione per iniziare a pianificare le manutenzioni preventive.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINAZIONE -->
+    {% if preventive.pages > 1 %}
+    <div class="pagination-container">
+        <div class="pagination">
+            {% if preventive.has_prev %}
+                <a href="{{ url_for('manutenzioni_preventive.index_preventive', page=preventive.prev_num, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% endif %}
+            {% for page_num in preventive.iter_pages() %}
+                {% if page_num %}
+                    <a href="{{ url_for('manutenzioni_preventive.index_preventive', page=page_num, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link {% if page_num == preventive.page %}active{% endif %}">
+                        {{ page_num }}
+                    </a>
+                {% else %}
+                    <span class="pagination-ellipsis">…</span>
+                {% endif %}
+            {% endfor %}
+            {% if preventive.has_next %}
+                <a href="{{ url_for('manutenzioni_preventive.index_preventive', page=preventive.next_num, tipo=filtro_tipo, veicolo=filtro_veicolo) }}" class="pagination-link">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    <style>
+        /* Stili per la tabella delle manutenzioni preventive, ereditati dal modulo manutenzioni */
+        .maintenance-table-container {
+            background: var(--matrix-dark);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--matrix-light-gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .maintenance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .maintenance-table th {
+            background: linear-gradient(135deg, var(--matrix-gray), var(--matrix-light-gray));
+            color: var(--matrix-green);
+            padding: 1rem;
+            text-align: left;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-bottom: 2px solid var(--matrix-green);
+        }
+
+        .maintenance-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--matrix-light-gray);
+            color: var(--matrix-text);
+            vertical-align: top;
+        }
+
+        .maintenance-row:hover {
+            background: rgba(0, 255, 65, 0.05);
+        }
+    </style>
+
+    <!-- Script per toggle larghezza colonne -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const table = document.querySelector('.maintenance-table');
+        const btn = document.getElementById('toggleColumnsBtn');
+        const key = 'preventiveWideColumns';
+        if (localStorage.getItem(key) === 'true') {
+            table.classList.add('expanded');
+        }
+        btn.addEventListener('click', function() {
+            table.classList.toggle('expanded');
+            localStorage.setItem(key, table.classList.contains('expanded'));
+        });
+    });
+    </script>
+    <style>
+    .maintenance-table.expanded {
+        table-layout: auto;
+    }
+    .maintenance-table.expanded th,
+    .maintenance-table.expanded td {
+        white-space: normal;
+        word-break: break-word;
+    }
+    </style>
+</div>
+{% endblock %}

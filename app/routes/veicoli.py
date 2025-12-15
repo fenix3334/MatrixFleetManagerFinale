@@ -1,15 +1,16 @@
+# app/routes/veicoli.py - VERSIONE COMPLETA CORRETTA
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
-from app.models import Veicolo, Fornitore, SocietaNoleggio
+from app.models import Veicolo, Fornitore, Scadenza  # Import Scadenza per creare revisioni automatiche
 from app.forms.veicoli import VeicoloForm
 from app.extensions import db
-from sqlalchemy import and_
+from sqlalchemy import and_, case
 
 # Importa utility per gestione nuclei
 from app.utils.nuclei import (
     get_veicoli_by_nucleo, 
     get_fornitori_for_choices,
-    get_societa_noleggio_for_choices,
     can_access_record,
     should_filter_by_nucleo,
     get_nucleo_corrente_admin
@@ -22,6 +23,23 @@ def clean_field(value):
     if value and value.strip():
         return value.strip()
     return None
+
+def get_societa_noleggio_choices():
+    """Restituisce choices per società di noleggio dai fornitori.
+
+    A partire dalla versione v1.7 l'anagrafica fornitori è condivisa tra tutti i nuclei,
+    pertanto non si applica alcun filtro basato sul campo `nucleo` in questa
+    selezione.  Vengono restituiti tutti i fornitori attivi che hanno il settore
+    "noleggio"."""
+    # Recupera tutti i fornitori attivi senza filtrare per nucleo
+    fornitori = Fornitore.query.filter_by(attivo=True).all()
+    # Filtra solo quelli che sono società di noleggio
+    societa_noleggio = [
+        (fornitore.id, fornitore.ragione_sociale)
+        for fornitore in fornitori
+        if fornitore.is_noleggio
+    ]
+    return [('', 'Seleziona società...')] + societa_noleggio
 
 def validate_veicolo_access(veicolo_id):
     """Verifica che l'utente possa accedere al veicolo"""
@@ -51,7 +69,21 @@ def index_veicoli():
         veicoli_query = veicoli_query.filter_by(carburante=carburante_filter)
     
     # Paginazione
-    veicoli_paginati = veicoli_query.order_by(Veicolo.targa.asc()).paginate(
+    # Ordina i veicoli in modo da visualizzare prima quelli attivi e alla fine
+    # quelli con stato "Dismesso".  Questo ordinamento garantisce che i
+    # veicoli dismessi non compaiano tra i mezzi operativi.  All’interno dei
+    # due gruppi l’ordinamento rimane alfabetico per targa.
+    # Utilizza SQLAlchemy case expression per ordinare i veicoli mettendo quelli
+    # con stato "Dismesso" alla fine.  In SQLAlchemy 2.x i valori delle
+    # condizioni devono essere passati come argomenti posizionali anziché
+    # all'interno di una lista.  Senza questa forma corretta viene sollevata
+    # un'eccezione ArgumentError durante la costruzione della query.  La
+    # condizione restituisce 1 per i veicoli dismessi e 0 altrimenti.
+    order_expr = case(
+        (Veicolo.stato == 'Dismesso', 1),
+        else_=0
+    )
+    veicoli_paginati = veicoli_query.order_by(order_expr.asc(), Veicolo.targa.asc()).paginate(
         page=page, per_page=20, error_out=False
     )
     
@@ -60,55 +92,33 @@ def index_veicoli():
     stati_disponibili = db.session.query(Veicolo.stato).filter(
         Veicolo.id.in_([v.id for v in tutti_veicoli])
     ).distinct().all()
+    
     carburanti_disponibili = db.session.query(Veicolo.carburante).filter(
         Veicolo.id.in_([v.id for v in tutti_veicoli])
     ).distinct().all()
     
-    # ✅ FIX: Passa l'oggetto paginazione completo, non solo gli items
-    return render_template('veicoli/index.html', 
-                         veicoli=veicoli_paginati,  # ✅ CORRETTO: oggetto paginazione completo
-                         stati=[s[0] for s in stati_disponibili],
-                         carburanti=[c[0] for c in carburanti_disponibili],
-                         filtro_stato=stato_filter,
-                         filtro_carburante=carburante_filter)
+    return render_template('veicoli/index.html',
+                         veicoli=veicoli_paginati,
+                         stati=[s[0] for s in stati_disponibili if s[0]],
+                         carburanti=[c[0] for c in carburanti_disponibili if c[0]],
+                         stato_filter=stato_filter,
+                         carburante_filter=carburante_filter)
 
-@veicoli_bp.route('/dettaglio/<int:id>')
+@veicoli_bp.route('/nuovo', methods=['GET', 'POST'])
 @login_required
-def dettaglio_veicolo(id):
-    # Verifica accesso e ottieni veicolo
-    veicolo = validate_veicolo_access(id)
-    
-    return render_template('veicoli/dettaglio.html', veicolo=veicolo)
-
-@veicoli_bp.route('/aggiungi', methods=['GET', 'POST'])
-@login_required
-def aggiungi_veicolo():
+def nuovo_veicolo():
     form = VeicoloForm()
     
-    # Aggiorna choices per società noleggio (filtrate per nucleo)
-    form.societa_noleggio_id.choices = get_societa_noleggio_for_choices()
-    
-    # Se utente normale, imposta automaticamente il suo nucleo
-    if current_user.ruolo != 'admin':
-        form.nucleo.data = current_user.nucleo
-        form.nucleo.render_kw = {'disabled': True}
+    # Popola choices società noleggio
+    form.societa_noleggio_id.choices = get_societa_noleggio_choices()
     
     if form.validate_on_submit():
         try:
-            # 🆕 GESTIONE UNITÀ OPERATIVA PERSONALIZZATA
-            unita_operativa_finale = form.unita_operativa.data
-            unita_operativa_personalizzata = None
-            
-            if form.unita_operativa.data == 'Altro' and form.unita_operativa_personalizzata.data:
-                unita_operativa_personalizzata = clean_field(form.unita_operativa_personalizzata.data)
-                unita_operativa_finale = 'Altro'  # Mantieni "Altro" nel campo principale
-            
-            # GESTIONE CARBURANTE PERSONALIZZATO
-            carburante_finale = form.carburante.data
-            carburante_personalizzato = None
-            
-            if form.carburante.data == 'Altro' and form.carburante_personalizzato.data:
-                carburante_personalizzato = clean_field(form.carburante_personalizzato.data)
+            # Determina nucleo per il nuovo veicolo
+            if current_user.ruolo == 'admin':
+                nucleo_selezionato = get_nucleo_corrente_admin() or current_user.nucleo
+            else:
+                nucleo_selezionato = current_user.nucleo
             
             veicolo = Veicolo(
                 targa=form.targa.data.upper(),
@@ -117,150 +127,134 @@ def aggiungi_veicolo():
                 anno_immatricolazione=form.anno_immatricolazione.data,
                 data_immatricolazione=form.data_immatricolazione.data,
                 km_attuali=form.km_attuali.data,
-                carburante=carburante_finale,
-                carburante_personalizzato=carburante_personalizzato,
+                carburante=form.carburante.data,
+                carburante_personalizzato=clean_field(form.carburante_personalizzato.data),
                 cilindrata=form.cilindrata.data,
                 colore=clean_field(form.colore.data),
                 stato=form.stato.data,
+                note=clean_field(form.note.data),
                 carta_carburante=clean_field(form.carta_carburante.data),
                 pin_carburante=clean_field(form.pin_carburante.data),
                 societa_noleggio_id=form.societa_noleggio_id.data if form.societa_noleggio_id.data else None,
-                
-                # 🆕 CAMPI UNITÀ OPERATIVA
-                unita_operativa=unita_operativa_finale,
-                unita_operativa_personalizzata=unita_operativa_personalizzata,
-                
-                note=clean_field(form.note.data),
-                nucleo=form.nucleo.data if current_user.ruolo == 'admin' else current_user.nucleo
+                unita_operativa=form.unita_operativa.data,
+                unita_operativa_personalizzata=clean_field(form.unita_operativa_personalizzata.data),
+                nucleo=nucleo_selezionato
             )
             
             db.session.add(veicolo)
             db.session.commit()
-            
-            # Messaggio con unità operativa visualizzata
-            unita_display = veicolo.unita_operativa_display
-            flash(f'Veicolo {veicolo.targa} aggiunto con successo! Assegnato a: {unita_display}', 'success')
+
+            # 🆕 Creazione automatica della scadenza revisione
+            try:
+                # Calcola la prima revisione: 4 anni dopo l'immatricolazione secondo la normativa vigente.
+                immat_date = veicolo.data_immatricolazione
+                # Gestisce eventuali date come 29 febbraio portandole al 28 in caso di anno non bisestile
+                try:
+                    revisione_data = immat_date.replace(year=immat_date.year + 4)
+                except ValueError:
+                    # Se febbraio 29 e l'anno di destinazione non è bisestile, usa 28 febbraio
+                    revisione_data = immat_date.replace(year=immat_date.year + 4, day=28)
+                # Crea scadenza revisione se non esistente
+                scadenza = Scadenza(
+                    veicolo_id=veicolo.id,
+                    tipo_scadenza='Revisione',
+                    data_scadenza=revisione_data,
+                    stato='Attiva',
+                    notifica_giorni=30,
+                    nucleo=nucleo_selezionato
+                )
+                db.session.add(scadenza)
+                db.session.commit()
+            except Exception:
+                # Se qualcosa va storto nella creazione della scadenza, non interrompere il flusso
+                db.session.rollback()
+
+            flash(f'Veicolo {veicolo.targa} aggiunto con successo!', 'success')
             return redirect(url_for('veicoli.index_veicoli'))
             
         except Exception as e:
             db.session.rollback()
             flash(f'Errore durante il salvataggio: {str(e)}', 'error')
     
-    return render_template('veicoli/form.html', form=form, titolo='Aggiungi Veicolo')
+    return render_template('veicoli/form.html', form=form, titolo='Nuovo Veicolo')
 
-@veicoli_bp.route('/modifica/<int:id>', methods=['GET', 'POST'])
+@veicoli_bp.route('/<int:veicolo_id>')
 @login_required
-def modifica_veicolo(id):
-    # Verifica accesso e ottieni veicolo
-    veicolo = validate_veicolo_access(id)
+def dettaglio_veicolo(veicolo_id):
+    veicolo = validate_veicolo_access(veicolo_id)
     
+    # Carica anche le percorrenze chilometriche
+    from app.models import PercorrenzaChilometrica, LimiteChilometrico
+    
+    # Percorrenze recenti
+    percorrenze = PercorrenzaChilometrica.query.filter_by(
+        veicolo_id=veicolo_id
+    ).order_by(
+        PercorrenzaChilometrica.anno.desc(),
+        PercorrenzaChilometrica.mese.desc()
+    ).limit(6).all()
+    
+    # Limite attivo
+    limite_attivo = veicolo.limite_attivo
+    
+    return render_template('veicoli/dettaglio.html', 
+                         veicolo=veicolo,
+                         percorrenze=percorrenze,
+                         limite_attivo=limite_attivo)
+
+@veicoli_bp.route('/<int:veicolo_id>/modifica', methods=['GET', 'POST'])
+@login_required
+def modifica_veicolo(veicolo_id):
+    veicolo = validate_veicolo_access(veicolo_id)
     form = VeicoloForm(obj=veicolo)
     
-    # Aggiorna choices per società noleggio (filtrate per nucleo)
-    form.societa_noleggio_id.choices = get_societa_noleggio_for_choices()
-    
-    # 🆕 Se in modifica e l'unità operativa non è tra le opzioni predefinite,
-    # impostala come "Altro" e popola il campo personalizzato
-    opzioni_predefinite = [
-        'Cure Primarie ADI Via del Capitel',
-        'Cure Primarie ADI Via Campania', 
-        'Guardia Medica'
-    ]
-    
-    if request.method == 'GET' and veicolo.unita_operativa not in opzioni_predefinite:
-        form.unita_operativa.data = 'Altro'
-        form.unita_operativa_personalizzata.data = veicolo.unita_operativa
-    
-    # Se in modifica e il carburante non è tra le opzioni predefinite,
-    # impostalo come "Altro" e popola il campo personalizzato
-    carburanti_predefiniti = ['Benzina', 'Diesel', 'GPL', 'Metano', 'Elettrico', 'Ibrido']
-    
-    if request.method == 'GET' and veicolo.carburante not in carburanti_predefiniti:
-        form.carburante.data = 'Altro'
-        form.carburante_personalizzato.data = veicolo.carburante
-    
-    # Se utente normale, non può modificare il nucleo
-    if current_user.ruolo != 'admin':
-        form.nucleo.render_kw = {'disabled': True}
+    # Popola choices società noleggio
+    form.societa_noleggio_id.choices = get_societa_noleggio_choices()
     
     if form.validate_on_submit():
         try:
-            # 🆕 GESTIONE UNITÀ OPERATIVA PERSONALIZZATA
-            unita_operativa_finale = form.unita_operativa.data
-            unita_operativa_personalizzata = None
-            
-            if form.unita_operativa.data == 'Altro' and form.unita_operativa_personalizzata.data:
-                unita_operativa_personalizzata = clean_field(form.unita_operativa_personalizzata.data)
-                unita_operativa_finale = 'Altro'
-            
-            # GESTIONE CARBURANTE PERSONALIZZATO
-            carburante_finale = form.carburante.data
-            carburante_personalizzato = None
-            
-            if form.carburante.data == 'Altro' and form.carburante_personalizzato.data:
-                carburante_personalizzato = clean_field(form.carburante_personalizzato.data)
-            
-            # Aggiorna manualmente i campi
+            # Aggiorna campi
             veicolo.targa = form.targa.data.upper()
             veicolo.marca = form.marca.data
             veicolo.modello = form.modello.data
             veicolo.anno_immatricolazione = form.anno_immatricolazione.data
             veicolo.data_immatricolazione = form.data_immatricolazione.data
             veicolo.km_attuali = form.km_attuali.data
-            veicolo.carburante = carburante_finale
-            veicolo.carburante_personalizzato = carburante_personalizzato
+            veicolo.carburante = form.carburante.data
+            veicolo.carburante_personalizzato = clean_field(form.carburante_personalizzato.data)
             veicolo.cilindrata = form.cilindrata.data
             veicolo.colore = clean_field(form.colore.data)
             veicolo.stato = form.stato.data
+            veicolo.note = clean_field(form.note.data)
             veicolo.carta_carburante = clean_field(form.carta_carburante.data)
             veicolo.pin_carburante = clean_field(form.pin_carburante.data)
             veicolo.societa_noleggio_id = form.societa_noleggio_id.data if form.societa_noleggio_id.data else None
-            
-            # 🆕 AGGIORNA CAMPI UNITÀ OPERATIVA
-            veicolo.unita_operativa = unita_operativa_finale
-            veicolo.unita_operativa_personalizzata = unita_operativa_personalizzata
-            
-            veicolo.note = clean_field(form.note.data)
-            
-            # Solo admin può modificare il nucleo
-            if current_user.ruolo == 'admin':
-                veicolo.nucleo = form.nucleo.data
+            veicolo.unita_operativa = form.unita_operativa.data
+            veicolo.unita_operativa_personalizzata = clean_field(form.unita_operativa_personalizzata.data)
             
             db.session.commit()
-            
-            # Messaggio con unità operativa visualizzata
-            unita_display = veicolo.unita_operativa_display
-            flash(f'Veicolo {veicolo.targa} modificato con successo! Assegnato a: {unita_display}', 'success')
-            return redirect(url_for('veicoli.index_veicoli'))
+            flash(f'Veicolo {veicolo.targa} modificato con successo!', 'success')
+            return redirect(url_for('veicoli.dettaglio_veicolo', veicolo_id=veicolo.id))
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Errore durante la modifica: {str(e)}', 'error')
+            flash(f'Errore durante il salvataggio: {str(e)}', 'error')
     
-    return render_template('veicoli/form.html', form=form, titolo='Modifica Veicolo')
+    return render_template('veicoli/form.html', 
+                         form=form, 
+                         veicolo=veicolo, 
+                         titolo=f'Modifica Veicolo {veicolo.targa}')
 
-@veicoli_bp.route('/elimina/<int:id>', methods=['POST'])
+@veicoli_bp.route('/<int:veicolo_id>/elimina', methods=['POST'])
 @login_required
-def elimina_veicolo(id):
-    # Verifica accesso e ottieni veicolo
-    veicolo = validate_veicolo_access(id)
+def elimina_veicolo(veicolo_id):
+    veicolo = validate_veicolo_access(veicolo_id)
     
     try:
-        # Controlli di sicurezza prima dell'eliminazione
-        if veicolo.manutenzioni:
-            flash(f'Impossibile eliminare il veicolo {veicolo.targa}: ha manutenzioni associate', 'error')
-            return redirect(url_for('veicoli.index_veicoli'))
-        
-        if veicolo.scadenze:
-            flash(f'Impossibile eliminare il veicolo {veicolo.targa}: ha scadenze associate', 'error')
-            return redirect(url_for('veicoli.index_veicoli'))
-        
-        targa_eliminata = veicolo.targa
+        targa = veicolo.targa
         db.session.delete(veicolo)
         db.session.commit()
-        
-        flash(f'Veicolo {targa_eliminata} eliminato con successo!', 'success')
-        
+        flash(f'Veicolo {targa} eliminato con successo!', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Errore durante l\'eliminazione: {str(e)}', 'error')

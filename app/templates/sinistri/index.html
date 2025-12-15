@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Gestione Sinistri - Matrix Fleet Manager{% endblock %}
+
+{% block print_actions %}
+<div class="print-actions" style="margin-bottom: 1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+    <button class="btn btn-outline-light" type="button" onclick="window.print()">
+        <i class="fas fa-print"></i> Stampa pagina
+    </button>
+    <button class="btn btn-outline-light" type="button" onclick="printSelectedArea()">
+        <i class="fas fa-cut"></i> Stampa selezione
+    </button>
+    {% if pagination.pages > 1 %}
+    <div class="pagination" style="display:flex; align-items:center; gap:0.3rem;">
+        {% if pagination.has_prev %}
+            <a href="{{ url_for('sinistri.index_sinistri', page=pagination.prev_num, tipo=tipo_filter, veicolo=veicolo_filter) }}" class="pagination-link">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+                {% if p != pagination.page %}
+                    <a href="{{ url_for('sinistri.index_sinistri', page=p, tipo=tipo_filter, veicolo=veicolo_filter) }}" class="pagination-link">{{ p }}</a>
+                {% else %}
+                    <span class="pagination-current">{{ p }}</span>
+                {% endif %}
+            {% else %}
+                <span class="pagination-ellipsis">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+            <a href="{{ url_for('sinistri.index_sinistri', page=pagination.next_num, tipo=tipo_filter, veicolo=veicolo_filter) }}" class="pagination-link">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-car-crash"></i>
+            GESTIONE SINISTRI
+        </h1>
+        <div class="page-actions">
+            <a href="{{ url_for('sinistri.aggiungi_sinistro') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nuovo Sinistro
+            </a>
+        </div>
+    </div>
+
+    <!-- Banner nucleo e statistiche -->
+    {% if totale is not none %}
+    <div class="nucleo-info-banner">
+        <div class="nucleo-badge-info">
+            <i class="fas fa-car-crash"></i>
+            <span>Sinistri registrati: {{ totale }}</span>
+        </div>
+        <div class="nucleo-stats-info">
+            <span class="stat-info">
+                <i class="fas fa-user-friends"></i> {{ con_controparte }} con controparte
+            </span>
+            <span class="stat-info">
+                <i class="fas fa-mask"></i> {{ vandalico }} vandalici
+            </span>
+            <span class="stat-info">
+                <i class="fas fa-question-circle"></i> {{ sconosciuto }} sconosciuti
+            </span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filtri avanzati -->
+    <div class="filters-container">
+        <form method="get" class="advanced-filter-form">
+            <div class="filters-group">
+                <label for="tipo" class="filters-label">Tipo:</label>
+                <select name="tipo" id="tipo" class="filter-select">
+                    <option value="tutti">Tutti</option>
+                    {% for t in tipi_sinistro %}
+                        <option value="{{ t }}" {% if tipo_filter == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+                <label for="veicolo" class="filters-label">Veicolo:</label>
+                <select name="veicolo" id="veicolo" class="filter-select">
+                    <option value="tutti">Tutti</option>
+                    {% for id, nome in veicoli_choices %}
+                        <option value="{{ id }}" {% if veicolo_filter|int == id %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-filter"></i> Filtra
+                </button>
+                <a href="{{ url_for('sinistri.index_sinistri') }}" class="btn btn-secondary btn-sm">Reset</a>
+                <button type="button" id="toggleColumnsBtnSinistri" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-columns"></i> Larghezza Colonne
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabella sinistri racchiusa in una cornice -->
+    <div class="sinistri-table-container">
+        <table class="sinistri-table resizable-table">
+            <thead>
+                <tr>
+                    <th>Veicolo</th>
+                    <th>Data</th>
+                    <th>Tipo</th>
+                    <th>Luogo</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sinistri %}
+                <tr>
+                    <td>{{ s.veicolo.targa }}</td>
+                    <td>{{ s.data_sinistro.strftime('%d/%m/%Y') if s.data_sinistro else '' }}</td>
+                    <td>{{ s.tipo }}</td>
+                    <td>{{ s.luogo or '—' }}</td>
+                    <td>
+                        <div class="action-buttons-horizontal">
+                            <a href="{{ url_for('sinistri.dettaglio_sinistro', sinistro_id=s.id) }}" class="btn-action btn-primary" title="Dettaglio">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('sinistri.modifica_sinistro', sinistro_id=s.id) }}" class="btn-action btn-warning" title="Modifica">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('sinistri.elimina_sinistro', sinistro_id=s.id) }}" style="display:inline;" onsubmit="return confirm('Confermi l\'eliminazione?');">
+                                <button type="submit" class="btn-action btn-danger" title="Elimina">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">Nessun sinistro trovato.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginazione -->
+    {% if pagination.pages > 1 %}
+    <nav aria-label="Pagine sinistri" class="pagination-container">
+        <ul class="pagination">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('sinistri.index_sinistri', page=pagination.prev_num, tipo=tipo_filter, veicolo=veicolo_filter) }}">&laquo;</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+            {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if p %}
+                    {% if p == pagination.page %}
+                        <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('sinistri.index_sinistri', page=p, tipo=tipo_filter, veicolo=veicolo_filter) }}">{{ p }}</a></li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('sinistri.index_sinistri', page=pagination.next_num, tipo=tipo_filter, veicolo=veicolo_filter) }}">&raquo;</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const table = document.querySelector('.sinistri-table');
+    const btn = document.getElementById('toggleColumnsBtnSinistri');
+    const key = 'sinistriWideColumns';
+    if (localStorage.getItem(key) === 'true') {
+        table.classList.add('expanded');
+    }
+    if (btn) {
+        btn.addEventListener('click', function() {
+            table.classList.toggle('expanded');
+            localStorage.setItem(key, table.classList.contains('expanded'));
+        });
+    }
+});
+</script>
+<style>
+/*
+ * Stile personalizzato per la tabella dei sinistri
+ * Allineiamo l'aspetto a quello degli altri moduli (manutenzioni, scadenze)
+ * con una cornice visibile, sfondo scuro e intestazioni verdi.  
+ */
+
+.sinistri-table-container {
+    background: var(--matrix-dark);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--matrix-light-gray);
+    margin-bottom: 1.5rem;
+}
+
+.sinistri-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sinistri-table th {
+    background: linear-gradient(135deg, var(--matrix-gray), var(--matrix-light-gray));
+    color: var(--matrix-green);
+    padding: 1rem;
+    text-align: left;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-bottom: 2px solid var(--matrix-green);
+}
+
+.sinistri-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--matrix-light-gray);
+    color: var(--matrix-text);
+    vertical-align: top;
+}
+
+.sinistri-table tr:hover {
+    background: rgba(0, 255, 65, 0.05);
+}
+
+.sinistri-table.expanded {
+    table-layout: auto;
+}
+.sinistri-table.expanded th,
+.sinistri-table.expanded td {
+    white-space: normal;
+    word-break: break-word;
+}
+</style>
+{% endblock %}

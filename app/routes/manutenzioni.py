@@ -1,10 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from flask import send_file
 from flask_login import login_required, current_user
 from app.models import Manutenzione, Veicolo, Fornitore
 from app.forms.manutenzioni import ManutenzioneForm
 from app.extensions import db
 from datetime import date
 from sqlalchemy import and_, text
+import io
+import pandas as pd
 
 # Importa utility per gestione nuclei
 from app.utils.nuclei import (
@@ -161,6 +164,18 @@ def modifica_manutenzione(id):
     form.veicolo_id.choices = get_veicoli_for_choices()
     form.fornitore_id.choices = get_fornitori_for_choices()
     
+    # Assicurati che il veicolo attualmente associato alla manutenzione sia
+    # presente nelle scelte anche se non più attivo.  In questo modo il
+    # menu a discesa mostra sempre la targa del veicolo corrente, evitando
+    # che la selezione ricada sul primo veicolo attivo della lista.
+    current_vehicle = manutenzione.veicolo
+    if current_vehicle:
+        # Verifica se il veicolo corrente è già nelle scelte
+        if all(choice[0] != current_vehicle.id for choice in form.veicolo_id.choices):
+            form.veicolo_id.choices.append(
+                (current_vehicle.id, f"{current_vehicle.targa} - {current_vehicle.marca} {current_vehicle.modello}")
+            )
+    
     if form.validate_on_submit():
         try:
             manutenzione.veicolo_id = form.veicolo_id.data
@@ -254,3 +269,46 @@ def ripristina_manutenzione(id):
         flash(f'Errore durante l\'aggiornamento: {str(e)}', 'error')
     
     return redirect(url_for('manutenzioni.index_manutenzioni'))
+
+
+# === Funzioni aggiuntive per v1.24 ===
+
+@manutenzioni_bp.route('/export', methods=['GET'])
+@login_required
+def export_manutenzioni():
+    """Esporta l'elenco delle manutenzioni in formato Excel.
+
+    L'export rispetta i filtri di stato, tipo e veicolo passati nella query.
+    Il file include le colonne principali (Veicolo, Tipo, Data, KM, Stato,
+    Fornitore) e viene scaricato come allegato Excel.
+    """
+    manutenzioni_query = get_manutenzioni_by_nucleo()
+    stato_filter = request.args.get('stato')
+    tipo_filter = request.args.get('tipo')
+    veicolo_filter = request.args.get('veicolo')
+    if stato_filter:
+        manutenzioni_query = manutenzioni_query.filter_by(stato=stato_filter)
+    if tipo_filter:
+        manutenzioni_query = manutenzioni_query.filter_by(tipo_intervento=tipo_filter)
+    if veicolo_filter:
+        manutenzioni_query = manutenzioni_query.filter_by(veicolo_id=veicolo_filter)
+
+    records = manutenzioni_query.order_by(Manutenzione.data_intervento.desc()).all()
+
+    rows = []
+    for m in records:
+        rows.append({
+            'Veicolo': m.veicolo.targa if m.veicolo else '',
+            'Tipo Intervento': m.tipo_intervento,
+            'Data': m.data_intervento.strftime('%d/%m/%Y') if m.data_intervento else '',
+            'KM': m.km_intervento or '',
+            'Stato': m.stato,
+            'Fornitore': m.fornitore.ragione_sociale if m.fornitore else '',
+            'Note': (m.descrizione or '')[:100],
+        })
+    df = pd.DataFrame(rows)
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False)
+    output.seek(0)
+    return send_file(output, download_name='manutenzioni.xlsx', as_attachment=True)

@@ -18,6 +18,25 @@
     --matrix-info: #3742fa;
 }
 
+/*
+ * Disattiva tutte le animazioni e transizioni quando si utilizza il tema Matrix.
+ * Ciò include pulsazioni, slide-in, bordi animati e qualsiasi altro effetto
+ * definito in questo foglio di stile. In questo modo l'interfaccia assume
+ * un aspetto più professionale e statico, eliminando eventuali linee
+ * orizzontali o indicatori che scorrono attraverso lo schermo.
+ */
+body.theme-matrix *,
+body.theme-matrix *::before,
+body.theme-matrix *::after {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Nasconde la linea di evidenziazione che scorre sotto le voci di menu */
+body.theme-matrix .nav-link::before {
+    display: none !important;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -33,28 +52,16 @@ body {
     position: relative;
 }
 
-/* EFFETTO SFONDO MATRIX */
-#matrix-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-        radial-gradient(circle at 20% 20%, rgba(0, 255, 65, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(0, 255, 65, 0.05) 0%, transparent 50%),
-        linear-gradient(135deg, var(--matrix-black) 0%, var(--matrix-darker) 100%);
-    z-index: -2;
-}
-
+/*
+ * Sfondo Matrix statico
+ *
+ * L'animazione a scorrimento originaria è stata rimossa per rendere
+ * l'interfaccia più professionale. Il canvas e lo sfondo vengono nascosti
+ * e si mantiene solo un gradiente scuro statico, definito nel corpo.
+ */
+#matrix-bg,
 #matrix-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    opacity: 0.3;
+    display: none !important;
 }
 
 /* HEADER */
@@ -100,7 +107,10 @@ body {
 
 .main-nav {
     display: flex;
-    gap: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+    max-width: 70%;
 }
 
 .nav-link {
@@ -146,6 +156,21 @@ body {
     margin: 0 auto;
     padding: 2rem;
     min-height: calc(100vh - 120px);
+}
+
+/*
+ * Su schermi di dimensioni medio/grandi, manteniamo il contenuto e l'header
+ * centrati senza alcuno spostamento laterale. In precedenza veniva applicato
+ * un margine negativo per compensare lo spazio a destra, ma ciò spostava
+ * l'interfaccia troppo a sinistra. Ora utilizziamo margini automatici per
+ * centrare gli elementi e sfruttare al meglio lo spazio disponibile.
+ */
+@media (min-width: 1200px) {
+    .header-content,
+    .main-content {
+        margin-left: auto;
+        margin-right: auto;
+    }
 }
 
 /* FLASH MESSAGES */
@@ -606,6 +631,20 @@ body {
     color: var(--matrix-green);
 }
 
+/* Pulsante informativo (es. link a report) */
+/* Pulsante informativo (es. link a report) */
+.btn-info {
+    background: linear-gradient(135deg, var(--matrix-info) 0%, var(--matrix-info) 100%);
+    color: var(--matrix-black);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    border: none;
+}
+
+.btn-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
 /* PAGE CONTAINERS */
 .page-container {
     max-width: 1200px;
@@ -871,6 +910,51 @@ body {
     color: var(--matrix-danger);
     background: rgba(255, 71, 87, 0.1);
 }
+
+/*
+ * Quando i pulsanti di azione vengono utilizzati nel footer dei form
+ * (classi .form-actions-modern), devono espandersi per contenere
+ * correttamente l'etichetta di testo e l'icona. Qui sovrascriviamo
+ * le dimensioni fisse di .btn-action (35x35px) e aggiungiamo un padding
+ * più generoso. In questo modo le etichette come "Salva" o "Annulla"
+ * restano all'interno del pulsante invece di trabordare.
+ */
+.form-actions-modern .btn-action {
+    width: auto;
+    height: auto;
+    padding: 12px 24px;
+    font-size: 14px;
+    justify-content: center;
+    gap: 8px;
+}
+
+/*
+ * Gestione del ridimensionamento delle colonne per le tabelle dotate
+ * della classe ``resizable-table``.  Ogni intestazione (<th>) viene
+ * dotata di un piccolo manico (``.resizer``) posizionato sul bordo
+ * destro.  L'utente può trascinarlo per aumentare o diminuire la
+ * larghezza della colonna in maniera simile ai fogli di calcolo.
+ */
+.resizable-table th {
+    position: relative;
+}
+
+.resizable-table th .resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    /* Aumenta la larghezza del manico di ridimensionamento per renderlo più facile da afferrare
+     * con il mouse. Inoltre, accentua il colore per una migliore visibilità sul tema scuro. */
+    
+    height: 100%;
+    cursor: col-resize;
+    user-select: none;
+    background: rgba(0, 255, 65, 0.2);
+    border-left: 1px solid rgba(0, 255, 65, 0.4);
+
+    width: 10px;
+}
+
 
 /* FORMS */
 .form-container {
@@ -1338,3 +1422,472 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================================================
+   Miglioramento leggibilità per le tabelle della scheda kilometrica
+
+   Per rendere più chiari i dati nelle viste mensili e trimestrali, applichiamo
+   bordi sottili a tutte le celle delle tabelle Bootstrap class="table table-bordered".
+   Inoltre ridimensioniamo i campi input all'interno delle tabelle affinché
+   occupino correttamente lo spazio disponibile e il testo non si sovrapponga.
+*/
+.table.table-bordered th,
+.table.table-bordered td {
+    border: 1px solid var(--matrix-light-gray) !important;
+    vertical-align: middle;
+}
+
+.table.table-bordered input.form-control {
+    width: 100%;
+    min-width: 80px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    color: var(--matrix-text);
+    background-color: var(--matrix-dark);
+    border: 1px solid var(--matrix-light-gray);
+}
+
+/* ============================================================================
+   Stile personalizzato per le tabelle della scheda kilometrica (km-table)
+
+   Questa classe crea una tabella più professionale con bordi chiari e spaziatura
+   aumentata. Usare <table class="km-table"> nei template per applicare lo
+   stile. Le righe alternate hanno un leggero sfondo diverso per migliorare la
+   leggibilità.
+*/
+.km-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    color: var(--matrix-text);
+}
+
+.km-table th,
+.km-table td {
+    /* Bordi più visibili su sfondi scuri */
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 0.6rem 0.75rem;
+    vertical-align: middle;
+}
+
+.km-table th {
+    background: var(--matrix-dark);
+    color: var(--matrix-green);
+    /* Bordi più visibili per l'intestazione */
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    text-align: left;
+}
+
+.km-table tr:nth-child(even) {
+    background: var(--matrix-darker);
+}
+
+.km-table input.form-control {
+    width: 100%;
+    min-width: 80px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    color: var(--matrix-text);
+    background-color: var(--matrix-dark);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/*
+ * Stili per la sezione di controllo dei report veicolo
+ * Rendono i checkbox e le etichette ben visibili su sfondo scuro.
+ */
+.report-controls label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--matrix-light-gray);
+    border-radius: 4px;
+    color: var(--matrix-text);
+    cursor: pointer;
+    user-select: none;
+}
+.report-controls input[type="checkbox"] {
+    accent-color: var(--matrix-green);
+    cursor: pointer;
+}
+
+/*
+ * Fix fornitori: assicurare che la colonna "Azioni" della tabella fornitori
+ * abbia una larghezza minima sufficiente a mostrare i pulsanti di azione
+ * (visualizza, modifica, elimina).  Senza questa regola, su schermi
+ * piccoli o con il ridimensionamento manuale attivo, la colonna
+ * potrebbe collassare rendendo invisibili le icone.
+ */
+/*
+ * Imposta la larghezza minima più ampia per la colonna "Azioni" e
+ * rende la tabella fornitori orizzontalmente scrollabile su schermi
+ * stretti.  Inoltre previene l'andare a capo delle celle per
+ * permettere la visualizzazione completa dei dati e dei pulsanti.
+ */
+.suppliers-table .col-actions {
+    width: 140px;
+    min-width: 140px;
+    text-align: center;
+}
+
+
+
+.suppliers-table { width: 100%; table-layout: fixed; }
+
+.suppliers-table th,
+.suppliers-table td {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+
+
+/* ==========================
+   Matrix – compact UI v1.25.6
+   Scopo: topbar compatta, nav su una riga, admin a dx, tipografia coerente.
+   Reversibile se commentato: qui è ON by default per correggere layout eccessivo.
+   ========================== */
+
+body.theme-matrix, body.theme-professional {
+  --mx-font-base: 14px;
+  --mx-font-title-lg: 22px;
+  --mx-font-title-sm: 18px;
+  --mx-font-badge: 12px;
+  --mx-topbar-h: 56px;
+  --mx-gap-xs: 4px;
+  --mx-gap-sm: 8px;
+  --mx-gap-md: 12px;
+  --mx-gap-lg: 16px;
+}
+
+/* Tipografia base */
+body.theme-matrix, body.theme-professional {
+  font-size: var(--mx-font-base);
+  line-height: 1.4;
+}
+body.theme-matrix h1, body.theme-professional h1,
+body.theme-matrix .page-title, body.theme-professional .page-title,
+body.theme-matrix .dashboard-title, body.theme-professional .dashboard-title {
+  font-size: var(--mx-font-title-lg);
+  font-weight: 600;
+  line-height: 1.2;
+  margin: var(--mx-gap-md) 0 var(--mx-gap-sm);
+}
+body.theme-matrix h2, body.theme-professional h2,
+body.theme-matrix h3, body.theme-professional h3,
+body.theme-matrix .section-title, body.theme-professional .section-title {
+  font-size: var(--mx-font-title-sm);
+  font-weight: 600;
+  line-height: 1.25;
+  margin: var(--mx-gap-md) 0 var(--mx-gap-sm);
+}
+body.theme-matrix .badge, body.theme-professional .badge,
+body.theme-matrix .tag, body.theme-professional .tag,
+body.theme-matrix .status-pill, body.theme-professional .status-pill {
+  font-size: var(--mx-font-badge);
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+/* TOPBAR/MATRIX-HEADER compatta */
+body.theme-matrix .matrix-header,
+body.theme-professional .matrix-header {
+  min-height: var(--mx-topbar-h);
+  height: var(--mx-topbar-h);
+  padding: 0 var(--mx-gap-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--mx-gap-md);
+  /* Solleva l'header sopra la LED bar */
+  position: relative;
+  z-index: 2;
+}
+
+/* Layout interno header */
+body.theme-matrix .matrix-header .header-content,
+body.theme-professional .matrix-header .header-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: var(--mx-gap-md);
+}
+
+/* Nav orizzontale su una riga con overflow solo orizzontale */
+body.theme-matrix .main-nav,
+body.theme-professional .main-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--mx-gap-sm);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+
+/* Link nav compatti */
+body.theme-matrix .main-nav .nav-link,
+body.theme-professional .main-nav .nav-link {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+}
+
+/* Spingi user-menu a destra */
+body.theme-matrix .user-menu,
+body.theme-professional .user-menu {
+  margin-left: auto !important;
+  display: flex;
+  align-items: center;
+  gap: var(--mx-gap-sm);
+}
+
+/* Notifiche compatte */
+body.theme-matrix .notifications-container .notification-btn,
+body.theme-professional .notifications-container .notification-btn {
+  height: 36px;
+  width: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Card & Tabelle */
+body.theme-matrix .card, body.theme-professional .card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+body.theme-matrix .card-header, body.theme-professional .card-header {
+  padding: 12px 16px;
+  font-weight: 600;
+}
+body.theme-matrix .card-body, body.theme-professional .card-body {
+  padding: 16px;
+}
+body.theme-matrix table.table, body.theme-professional table.table {
+  font-size: 14px;
+}
+body.theme-matrix table.table thead th,
+body.theme-professional table.table thead th {
+  font-weight: 600;
+  background: var(--tbl-head-bg, #f6f7f9);
+}
+body.theme-matrix table.table th, body.theme-professional table.table th,
+body.theme-matrix table.table td, body.theme-professional table.table td {
+  padding: 8px 10px;
+  vertical-align: middle;
+}
+body.theme-matrix table.table th.actions,
+body.theme-matrix table.table td.actions,
+body.theme-professional table.table th.actions,
+body.theme-professional table.table td.actions {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Azioni compatte in card liste */
+body.theme-matrix .item-actions-compact .action-btn-compact,
+body.theme-professional .item-actions-compact .action-btn-compact {
+  height: 32px;
+  padding: 0 8px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+/* Mobile fine-tune */
+@media (max-width: 768px) {
+  body.theme-matrix, body.theme-professional {
+    --mx-font-base: 13px;
+    --mx-topbar-h: 52px;
+  }
+}
+
+
+/* === v1.25.8: Header Style B (minimal dark + neon underline) === */
+body.theme-matrix .matrix-header,
+body.theme-professional .matrix-header {
+  position: relative;
+  background: linear-gradient(180deg, rgba(20,20,22,0.96) 0%, rgba(16,16,18,0.96) 100%);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.22);
+  padding: 0 var(--mx-gap-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--mx-gap-md);
+  height: 60px; /* confermato */
+  margin-top: var(--mx-topbar-offset, 16px);
+  z-index: 20;
+}
+/* LED bar sotto l'header (no overlap) */
+body.theme-matrix .matrix-header::after,
+body.theme-professional .matrix-header::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  /* Sposta la LED bar più in basso per evitare sovrapposizioni con il menu */
+  bottom: -18px;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(0,255,120,0.78) 0%, rgba(0,255,90,0.35) 60%, rgba(0,255,120,0.78) 100%);
+  filter: drop-shadow(0 0 8px rgba(0,255,120,0.6));
+}
+/* Nav orizzontale elegante */
+body.theme-matrix .main-nav,
+body.theme-professional .main-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+body.theme-matrix .main-nav .nav-link,
+body.theme-professional .main-nav .nav-link {
+  height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+  letter-spacing: .2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+  color: #d9fcef;
+  text-decoration: none;
+  transition: color .15s ease, text-shadow .15s ease, background-color .15s ease;
+}
+body.theme-matrix .main-nav .nav-link:hover,
+body.theme-professional .main-nav .nav-link:hover {
+  color: #e9fff8;
+  text-shadow: 0 0 6px rgba(0,255,140,0.65); /* neon medio */
+  background-color: rgba(0,255,130,0.06);
+}
+body.theme-matrix .main-nav .nav-link.active,
+body.theme-professional .main-nav .nav-link.active {
+  color: #eafff6;
+  background-color: rgba(0,255,120,0.12);
+  box-shadow: inset 0 0 0 1px rgba(0,255,120,0.35), 0 0 8px rgba(0,255,120,0.22);
+}
+/* Area utente pill */
+body.theme-matrix .user-menu,
+body.theme-professional .user-menu {
+  margin-left: auto !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+body.theme-matrix .user-btn,
+body.theme-professional .user-btn {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  color: #d9fcef;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: background-color .15s ease, border-color .15s ease;
+}
+body.theme-matrix .user-btn:hover,
+body.theme-professional .user-btn:hover {
+  background: rgba(0,255,120,0.06);
+  border-color: rgba(0,255,120,0.28);
+}
+/* Toggle offset (default distanziata 22px impostata via JS) */
+body.ui-offset-distant .matrix-header { margin-top: 22px; }
+body.ui-offset-compact .matrix-header { margin-top: 8px; }
+/* Spazio contenuto */
+body.theme-matrix .page-content, body.theme-professional .page-content,
+body.theme-matrix main[role="main"], body.theme-professional main[role="main"] {
+  /* Aumenta il padding superiore per compensare la LED bar abbassata */
+  padding-top: calc(var(--mx-gap-lg) + 28px);
+}
+
+
+/* === v1.25.9 FIX4: remove LED lines & enforce clean header === */
+body.theme-matrix .matrix-header::before,
+body.theme-matrix .matrix-header::after,
+body.theme-professional .matrix-header::before,
+body.theme-professional .matrix-header::after {
+  display: none !important;
+  content: none !important;
+}
+body.theme-matrix .matrix-header,
+body.theme-professional .matrix-header {
+  border-bottom: none !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.22) !important; /* soft depth only */
+}
+/* Extra safety: eliminate any stray green separators */
+.neon-separator, .top-separator, .led-separator {
+  display: none !important;
+}
+
+
+/* === v1.26.0: Topbar 'Geotab-like' overlay (no separators, crisp, compact) === */
+body.topbar-geotab .matrix-header {
+  height: 58px;
+  margin-top: 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(18,19,22,0.98) 0%, rgba(14,15,18,0.98) 100%);
+  /* Clean depth, no lines */
+  box-shadow: 0 6px 18px rgba(0,0,0,.22);
+  position: relative;
+  z-index: 20;
+}
+/* No pseudo elements at all */
+body.topbar-geotab .matrix-header::before,
+body.topbar-geotab .matrix-header::after { content:none !important; display:none !important; }
+
+/* Navigation: smaller, tidy, no neon */
+body.topbar-geotab .main-nav {
+  display:flex; align-items:center; gap:8px;
+  overflow-x:auto; white-space:nowrap; scrollbar-width:thin;
+}
+body.topbar-geotab .main-nav .nav-link {
+  height: 34px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: #e7f2ee;
+  border-radius: 8px;
+  background-color: transparent;
+  text-shadow: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+body.topbar-geotab .main-nav .nav-link:hover {
+  background-color: rgba(255,255,255,0.06);
+  color: #ffffff;
+}
+body.topbar-geotab .main-nav .nav-link.active {
+  background-color: rgba(255,255,255,0.10);
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
+}
+
+/* User area: pill minimal */
+body.topbar-geotab .user-btn {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: #e7f2ee;
+}
+body.topbar-geotab .user-btn:hover {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+  color: #fff;
+}
+
+/* Content spacing (no LED line => less padding needed) */
+body.topbar-geotab .page-content,
+body.topbar-geotab main[role="main"] { padding-top: calc(var(--mx-gap-lg) + 12px); }

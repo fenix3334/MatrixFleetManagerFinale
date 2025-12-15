@@ -1,131 +1,309 @@
 {% extends "base.html" %}
 
-{% block title %}Dettaglio Scadenza - Matrix Fleet Manager{% endblock %}
+{% block title %}Dettaglio Scadenza {{ scadenza.tipo_scadenza }} - {{ scadenza.veicolo.targa }}{% endblock %}
 
 {% block content %}
-<div class="detail-container">
-    <div class="detail-header">
+<div class="modern-detail-container">
+    <div class="detail-header-modern">
         <div class="detail-title-section">
-            <h1 class="detail-title">
+            <div class="detail-icon-wrapper">
                 <i class="fas fa-clock"></i>
-                Dettaglio Scadenza: {{ scadenza.tipo_scadenza }}
-            </h1>
-            <p class="detail-subtitle">Informazioni complete sulla scadenza</p>
+            </div>
+            <div class="detail-title-info">
+                <h1 class="detail-title-main">{{ scadenza.tipo_scadenza }}</h1>
+                <p class="detail-subtitle">
+                    <span class="vehicle-plate-header">{{ scadenza.veicolo.targa }}</span>
+                    Dettaglio completo scadenza - Tutti i dati in sola lettura
+                </p>
+            </div>
         </div>
-        <div class="detail-actions">
-            <a href="{{ url_for('scadenze.modifica_scadenza', id=scadenza.id) }}" class="btn btn-warning">
-                <i class="fas fa-edit"></i> Modifica
+        <div class="detail-actions-header">
+            <a href="{{ url_for('scadenze.modifica_scadenza', id=scadenza.id) }}" class="btn-header btn-primary">
+                <i class="fas fa-edit"></i>
+                <span>Modifica</span>
             </a>
-            <a href="{{ url_for('scadenze.index_scadenze') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Torna alla Lista
+            <a href="{{ url_for('scadenze.index_scadenze') }}" class="btn-header btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Lista Scadenze</span>
             </a>
         </div>
     </div>
 
     <!-- Alert Stato Scadenza -->
     <div class="alert-section">
-        {% if scadenza.giorni_scadenza <= 0 %}
-            <div class="alert-box danger">
-                <i class="fas fa-times-circle"></i>
-                <strong>SCADENZA SUPERATA</strong>
-                <p>Questa scadenza è già scaduta da {{ scadenza.giorni_scadenza * -1 }} giorni. Procedere immediatamente!</p>
-            </div>
-        {% elif scadenza.giorni_scadenza <= 7 %}
-            <div class="alert-box critical">
-                <i class="fas fa-exclamation-triangle"></i>
-                <strong>SCADENZA CRITICA</strong>
-                <p>Questa scadenza scadrà tra {{ scadenza.giorni_scadenza }} giorni. Pianificare intervento urgente.</p>
-            </div>
-        {% elif scadenza.giorni_scadenza <= 30 %}
-            <div class="alert-box warning">
-                <i class="fas fa-exclamation"></i>
-                <strong>SCADENZA IN AVVICINAMENTO</strong>
-                <p>Questa scadenza scadrà tra {{ scadenza.giorni_scadenza }} giorni. Pianificare intervento.</p>
-            </div>
-        {% else %}
-            <div class="alert-box info">
-                <i class="fas fa-info-circle"></i>
-                <strong>SCADENZA LONTANA</strong>
-                <p>Questa scadenza scadrà tra {{ scadenza.giorni_scadenza }} giorni. Tenere sotto controllo.</p>
-            </div>
+        {% if scadenza.giorni_scadenza is not none %}
+            {% if scadenza.giorni_scadenza <= 0 %}
+                <div class="alert-box danger">
+                    <i class="fas fa-times-circle"></i>
+                    <div class="alert-content">
+                        <strong>SCADENZA SUPERATA</strong>
+                        <p>Questa scadenza è già scaduta da {{ scadenza.giorni_scadenza * -1 }} giorni. Procedere immediatamente!</p>
+                    </div>
+                </div>
+            {% elif scadenza.giorni_scadenza <= 7 %}
+                <div class="alert-box critical">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="alert-content">
+                        <strong>SCADENZA CRITICA</strong>
+                        <p>Questa scadenza scadrà tra {{ scadenza.giorni_scadenza }} giorni. Pianificare intervento urgente.</p>
+                    </div>
+                </div>
+            {% elif scadenza.giorni_scadenza <= 30 %}
+                <div class="alert-box warning">
+                    <i class="fas fa-exclamation"></i>
+                    <div class="alert-content">
+                        <strong>SCADENZA IN AVVICINAMENTO</strong>
+                        <p>Questa scadenza scadrà tra {{ scadenza.giorni_scadenza }} giorni. Pianificare intervento.</p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert-box info">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="alert-content">
+                        <strong>SCADENZA LONTANA</strong>
+                        <p>Questa scadenza scadrà tra {{ scadenza.giorni_scadenza }} giorni. Situazione sotto controllo.</p>
+                    </div>
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 
-    <!-- Pannelli Informazioni -->
-    <div class="detail-panels">
+    <!-- Grid delle Sezioni Informative -->
+    <div class="detail-sections-grid">
         
-        <!-- Informazioni Veicolo -->
-        <div class="detail-panel">
-            <h3><i class="fas fa-car"></i> Veicolo Associato</h3>
-            <div class="detail-content">
-                <div class="info-row">
-                    <span class="info-label">Targa:</span>
-                    <span class="info-value vehicle-plate">{{ scadenza.veicolo.targa }}</span>
+        <!-- SEZIONE 1: DATI VEICOLO -->
+        <div class="detail-card" data-section="1">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-car"></i>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Marca/Modello:</span>
-                    <span class="info-value">{{ scadenza.veicolo.marca }} {{ scadenza.veicolo.modello }}</span>
+                <div class="card-title">
+                    <h3>Dati Veicolo</h3>
+                    <p>Informazioni del veicolo interessato</p>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Anno:</span>
-                    <span class="info-value">{{ scadenza.veicolo.anno_immatricolazione }}</span>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Targa:</span>
+                    <span class="detail-value vehicle-plate">{{ scadenza.veicolo.targa }}</span>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Carburante:</span>
-                    <span class="info-value">{{ scadenza.veicolo.carburante_display }}</span>
+                <div class="detail-item">
+                    <span class="detail-label">Marca/Modello:</span>
+                    <span class="detail-value">{{ scadenza.veicolo.marca }} {{ scadenza.veicolo.modello }}</span>
                 </div>
-                <div class="detail-actions-inline">
-                    <a href="{{ url_for('veicoli.dettaglio_veicolo', id=scadenza.veicolo.id) }}" class="btn btn-sm btn-primary">
-                        <i class="fas fa-eye"></i> Dettaglio Veicolo
-                    </a>
+                <div class="detail-item">
+                    <span class="detail-label">Anno:</span>
+                    <span class="detail-value year-badge">{{ scadenza.veicolo.anno_immatricolazione }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">KM Attuali:</span>
+                    <span class="detail-value km-value">
+                        <i class="fas fa-road"></i>
+                        {{ scadenza.veicolo.km_attuali|format_number }} km
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Nucleo:</span>
+                    <span class="detail-value nucleo-badge">
+                        <i class="fas fa-building"></i>
+                        {{ scadenza.nucleo }}
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- Informazioni Scadenza -->
-        <div class="detail-panel">
-            <h3><i class="fas fa-calendar-alt"></i> Informazioni Scadenza</h3>
-            <div class="detail-content">
-                <div class="info-row">
-                    <span class="info-label">Tipo Scadenza:</span>
-                    <span class="info-value highlight">{{ scadenza.tipo_scadenza }}</span>
+        <!-- SEZIONE 2: DATI SCADENZA -->
+        <div class="detail-card" data-section="2">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-calendar-alt"></i>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Data Scadenza:</span>
-                    <span class="info-value date-value">{{ scadenza.data_scadenza.strftime('%d/%m/%Y') }}</span>
+                <div class="card-title">
+                    <h3>Dati Scadenza</h3>
+                    <p>Informazioni base della scadenza</p>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Giorni Rimanenti:</span>
-                    <span class="info-value {% if scadenza.giorni_scadenza <= 0 %}text-danger{% elif scadenza.giorni_scadenza <= 7 %}text-warning{% else %}text-success{% endif %}">
-                        {% if scadenza.giorni_scadenza <= 0 %}
-                            Scaduta da {{ scadenza.giorni_scadenza * -1 }} giorni
-                        {% else %}
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Tipo Scadenza:</span>
+                    <span class="detail-value deadline-type">
+                        {% set icon_map = {
+                            'Revisione': 'fas fa-search',
+                            'Assicurazione': 'fas fa-shield-alt',
+                            'Bollo': 'fas fa-file-invoice-dollar',
+                            'Tagliando': 'fas fa-wrench',
+                            'Pneumatici': 'fas fa-circle',
+                            'Altro': 'fas fa-exclamation-circle'
+                        } %}
+                        {% set icon_class = icon_map.get(scadenza.tipo_scadenza, 'fas fa-clock') %}
+                        <i class="{{ icon_class }}"></i>
+                        {{ scadenza.tipo_scadenza }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Data Scadenza:</span>
+                    <span class="detail-value date-info">
+                        <i class="fas fa-calendar"></i>
+                        {{ scadenza.data_scadenza.strftime('%d/%m/%Y') }}
+                        <span class="day-of-week">({{ scadenza.data_scadenza.strftime('%A') }})</span>
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Stato:</span>
+                    <span class="status-badge status-{{ scadenza.stato|lower|replace(' ', '-') }}">
+                        <i class="fas fa-circle"></i>
+                        {{ scadenza.stato }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Data Creazione:</span>
+                    <span class="detail-value">
+                        <i class="fas fa-calendar-plus"></i>
+                        {{ scadenza.data_creazione.strftime('%d/%m/%Y %H:%M') if scadenza.data_creazione else 'N/A' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEZIONE 3: CALCOLO URGENZA -->
+        <div class="detail-card" data-section="3">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Calcolo Urgenza</h3>
+                    <p>Analisi temporale della scadenza</p>
+                </div>
+            </div>
+            <div class="card-content">
+                {% if scadenza.giorni_scadenza is not none %}
+                <div class="detail-item">
+                    <span class="detail-label">Giorni Rimanenti:</span>
+                    {% if scadenza.giorni_scadenza < 0 %}
+                        <span class="detail-value days-expired">
+                            <i class="fas fa-times-circle"></i>
+                            {{ scadenza.giorni_scadenza * -1 }} giorni fa
+                        </span>
+                    {% elif scadenza.giorni_scadenza == 0 %}
+                        <span class="detail-value days-today">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            SCADE OGGI
+                        </span>
+                    {% else %}
+                        <span class="detail-value days-remaining">
+                            <i class="fas fa-clock"></i>
                             {{ scadenza.giorni_scadenza }} giorni
+                        </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <div class="detail-item">
+                    <span class="detail-label">Livello Urgenza:</span>
+                    <span class="urgency-badge urgency-{{ scadenza.stato_urgenza }}">
+                        {% if scadenza.stato_urgenza == 'scaduta' %}
+                            <i class="fas fa-times-circle"></i>
+                            SCADUTA
+                        {% elif scadenza.stato_urgenza == 'critica' %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                            CRITICA
+                        {% elif scadenza.stato_urgenza == 'urgente' %}
+                            <i class="fas fa-exclamation"></i>
+                            URGENTE
+                        {% else %}
+                            <i class="fas fa-check-circle"></i>
+                            NORMALE
                         {% endif %}
                     </span>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Stato:</span>
-                    <span class="badge status-{{ scadenza.stato|lower|replace(' ', '-') }}">{{ scadenza.stato }}</span>
-                </div>
-                {% if scadenza.costo %}
-                <div class="info-row">
-                    <span class="info-label">Costo Previsto:</span>
-                    <span class="info-value cost-value">{{ scadenza.costo_formattato }}</span>
+                {% if scadenza.giorni_scadenza is not none and scadenza.giorni_scadenza > 0 %}
+                <div class="detail-item">
+                    <span class="detail-label">Settimane Rimanenti:</span>
+                    <span class="detail-value">
+                        <i class="fas fa-calendar-week"></i>
+                        {{ (scadenza.giorni_scadenza / 7)|round(1) }} settimane
+                    </span>
                 </div>
                 {% endif %}
-                <div class="info-row">
-                    <span class="info-label">Notifica Anticipata:</span>
-                    <span class="info-value">{{ scadenza.notifica_giorni }} giorni prima</span>
-                </div>
             </div>
         </div>
 
-        <!-- Note -->
+        <!-- SEZIONE 4: SISTEMA NOTIFICHE -->
+        <div class="detail-card" data-section="4">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Sistema Notifiche</h3>
+                    <p>Configurazione avvisi automatici</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Notifica Anticipata:</span>
+                    {% if scadenza.notifica_giorni %}
+                        <span class="detail-value notification-setting">
+                            <i class="fas fa-bell"></i>
+                            {{ scadenza.notifica_giorni }} giorni prima
+                        </span>
+                    {% else %}
+                        <span class="detail-value text-muted">
+                            <i class="fas fa-bell-slash"></i>
+                            Nessuna notifica configurata
+                        </span>
+                    {% endif %}
+                </div>
+                {% if scadenza.notifica_giorni and scadenza.giorni_scadenza is not none %}
+                <div class="detail-item">
+                    <span class="detail-label">Stato Notifica:</span>
+                    {% if scadenza.giorni_scadenza <= scadenza.notifica_giorni and scadenza.giorni_scadenza >= 0 %}
+                        <span class="detail-value notification-active">
+                            <i class="fas fa-bell"></i>
+                            NOTIFICA ATTIVA
+                        </span>
+                    {% elif scadenza.giorni_scadenza < 0 %}
+                        <span class="detail-value notification-expired">
+                            <i class="fas fa-times-circle"></i>
+                            SCADENZA SUPERATA
+                        </span>
+                    {% else %}
+                        <span class="detail-value notification-pending">
+                            <i class="fas fa-clock"></i>
+                            In attesa ({{ scadenza.giorni_scadenza - scadenza.notifica_giorni }} giorni)
+                        </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% if scadenza.notifica_giorni and scadenza.giorni_scadenza is not none and scadenza.giorni_scadenza > scadenza.notifica_giorni %}
+                <div class="detail-item">
+                    <span class="detail-label">Prossima Notifica:</span>
+                    <span class="detail-value">
+                        <i class="fas fa-calendar-day"></i>
+                        {% if scadenza.notifica_giorni %}
+                            Tra {{ scadenza.giorni_scadenza - scadenza.notifica_giorni }} giorni
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SEZIONE 5: NOTE -->
         {% if scadenza.note %}
-        <div class="detail-panel full-width">
-            <h3><i class="fas fa-sticky-note"></i> Note</h3>
-            <div class="detail-content">
+        <div class="detail-card full-width" data-section="5">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-sticky-note"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Note</h3>
+                    <p>Annotazioni aggiuntive</p>
+                </div>
+            </div>
+            <div class="card-content">
                 <div class="notes-content">
                     {{ scadenza.note|replace('\n', '<br>')|safe }}
                 </div>
@@ -133,164 +311,758 @@
         </div>
         {% endif %}
 
-        <!-- Scadenze Correlate -->
-        <div class="detail-panel full-width">
-            <h3><i class="fas fa-list"></i> Altre Scadenze del Veicolo</h3>
-            <div class="detail-content">
-                {% set altre_scadenze = scadenza.veicolo.scadenze|rejectattr('id', 'equalto', scadenza.id)|list %}
-                {% if altre_scadenze %}
-                    <div class="scadenze-list">
-                        {% for altra_scadenza in altre_scadenze|sort(attribute='data_scadenza') %}
-                        <div class="scadenza-item {% if altra_scadenza.giorni_scadenza <= 7 %}urgent{% endif %}">
-                            <div class="scadenza-type">
-                                <i class="fas fa-{% if altra_scadenza.tipo_scadenza == 'Revisione' %}search{% elif altra_scadenza.tipo_scadenza == 'Assicurazione' %}shield-alt{% elif altra_scadenza.tipo_scadenza == 'Bollo' %}receipt{% else %}clock{% endif %}"></i>
+        <!-- SEZIONE 6: ALTRE SCADENZE VEICOLO -->
+        {% set altre_scadenze = scadenza.veicolo.scadenze|rejectattr('id', 'eq', scadenza.id)|list %}
+        {% if altre_scadenze %}
+        <div class="detail-card full-width" data-section="6">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Altre Scadenze del Veicolo</h3>
+                    <p>Cronologia scadenze su {{ scadenza.veicolo.targa }}</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="related-list">
+                    {% for altra_scadenza in altre_scadenze[:8] %}
+                    <div class="related-item urgency-{{ altra_scadenza.stato_urgenza }}">
+                        <div class="related-info">
+                            <div class="related-title">
+                                {% set icon_map = {
+                                    'Revisione': 'fas fa-search',
+                                    'Assicurazione': 'fas fa-shield-alt',
+                                    'Bollo': 'fas fa-file-invoice-dollar',
+                                    'Tagliando': 'fas fa-wrench',
+                                    'Pneumatici': 'fas fa-circle',
+                                    'Altro': 'fas fa-exclamation-circle'
+                                } %}
+                                {% set icon_class = icon_map.get(altra_scadenza.tipo_scadenza, 'fas fa-clock') %}
+                                <i class="{{ icon_class }}"></i>
                                 {{ altra_scadenza.tipo_scadenza }}
                             </div>
-                            <div class="scadenza-date">
-                                {{ altra_scadenza.data_scadenza.strftime('%d/%m/%Y') }}
-                            </div>
-                            <div class="scadenza-days">
-                                {% if altra_scadenza.giorni_scadenza <= 0 %}
-                                    <span class="days-expired">Scaduta</span>
-                                {% elif altra_scadenza.giorni_scadenza <= 7 %}
-                                    <span class="days-critical">{{ altra_scadenza.giorni_scadenza }}g</span>
-                                {% else %}
-                                    <span class="days-ok">{{ altra_scadenza.giorni_scadenza }}g</span>
+                            <div class="related-details">
+                                <span class="related-date">{{ altra_scadenza.data_scadenza.strftime('%d/%m/%Y') }}</span>
+                                {% if altra_scadenza.giorni_scadenza is not none %}
+                                    {% if altra_scadenza.giorni_scadenza < 0 %}
+                                        <span class="urgency-badge urgency-scaduta">Scaduta da {{ altra_scadenza.giorni_scadenza * -1 }} giorni</span>
+                                    {% elif altra_scadenza.giorni_scadenza == 0 %}
+                                        <span class="urgency-badge urgency-critica">OGGI</span>
+                                    {% else %}
+                                        <span class="urgency-badge urgency-{{ altra_scadenza.stato_urgenza }}">{{ altra_scadenza.giorni_scadenza }} giorni</span>
+                                    {% endif %}
                                 {% endif %}
-                            </div>
-                            <div class="scadenza-actions">
-                                <a href="{{ url_for('scadenze.dettaglio_scadenza', id=altra_scadenza.id) }}" class="btn btn-xs btn-primary">
-                                    <i class="fas fa-eye"></i>
-                                </a>
+                                <span class="status-badge status-{{ altra_scadenza.stato|lower|replace(' ', '-') }}">
+                                    {{ altra_scadenza.stato }}
+                                </span>
                             </div>
                         </div>
-                        {% endfor %}
+                        <div class="related-actions">
+                            <a href="{{ url_for('scadenze.dettaglio_scadenza', id=altra_scadenza.id) }}" class="btn-related">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
                     </div>
-                {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-check"></i>
-                        <p>Nessuna altra scadenza registrata per questo veicolo</p>
-                    </div>
+                    {% endfor %}
+                </div>
+                {% if altre_scadenze|length > 8 %}
+                <div class="view-all-link">
+                    <span class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Mostrate le prime 8 scadenze di {{ altre_scadenze|length }} totali
+                    </span>
+                </div>
                 {% endif %}
+                <div class="view-all-link">
+                    <a href="{{ url_for('scadenze.index_scadenze') }}?veicolo={{ scadenza.veicolo.id }}" class="btn-view-all">
+                        <i class="fas fa-list"></i>
+                        Vedi tutte le scadenze del veicolo
+                    </a>
+                </div>
             </div>
         </div>
+        {% endif %}
 
+        <!-- SEZIONE 7: ALLEGATI -->
+        <div class="detail-card full-width" data-section="7">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-paperclip"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Allegati</h3>
+                    <p>File associati a questa scadenza</p>
+                </div>
+            </div>
+            <div class="card-content">
+                {% if scadenza.allegati %}
+                <ul class="attachment-list">
+                    {% for allegato in scadenza.allegati %}
+                    <li class="attachment-item">
+                        <a href="{{ url_for('allegati_scadenze.download_allegato_scadenza', allegato_id=allegato.id) }}" target="_blank">
+                            <i class="fas fa-file"></i> {{ allegato.filename }}
+                        </a>
+                        <form method="POST" action="{{ url_for('allegati_scadenze.delete_allegato_scadenza', allegato_id=allegato.id) }}" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questo allegato?');">
+                            <button type="submit" class="btn-action btn-danger btn-sm" title="Elimina allegato">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">Nessun allegato caricato.</p>
+                {% endif %}
+                <div class="upload-allegato-form" style="margin-top: 0.5rem;">
+                    <form method="POST" action="{{ url_for('allegati_scadenze.upload_allegato_scadenza', scadenza_id=scadenza.id) }}" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+                        <input type="file" name="file" id="allegatoFile" required class="form-control-file" style="flex:1;"/>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-upload"></i> Carica
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- CSS Aggiuntivo per Dettaglio -->
 <style>
-.scadenze-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+/* === DETTAGLIO COMPLETO SCADENZA === */
+
+.modern-detail-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+    background: linear-gradient(135deg, rgba(0, 20, 0, 0.7), rgba(0, 40, 0, 0.3));
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.scadenza-item {
+/* Header Dettaglio */
+.detail-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+    padding: 25px;
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.05));
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.detail-title-section {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.75rem;
-    background: var(--matrix-gray);
-    border: 1px solid var(--matrix-light-gray);
-    border-radius: 6px;
-    transition: all 0.3s ease;
+    gap: 20px;
 }
 
-.scadenza-item:hover {
-    border-color: var(--matrix-green);
-    background: rgba(0, 255, 65, 0.05);
-}
-
-.scadenza-item.urgent {
-    border-color: var(--matrix-warning);
-    background: rgba(255, 165, 2, 0.1);
-}
-
-.scadenza-type {
-    flex: 1;
+.detail-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #00ff41, #7fff7f);
+    border-radius: 15px;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 255, 65, 0.3);
 }
 
-.scadenza-date {
+.detail-icon-wrapper i {
+    font-size: 24px;
+    color: #000;
+}
+
+.detail-title-info h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #00ff41;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+.vehicle-plate-header {
     font-family: 'Orbitron', monospace;
-    color: var(--matrix-text-dim);
-    font-size: 0.9rem;
+    background: rgba(0, 255, 65, 0.2);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #00ff41;
+    margin-right: 8px;
 }
 
-.scadenza-days {
-    min-width: 60px;
-    text-align: center;
+.detail-subtitle {
+    margin: 5px 0 0 0;
+    color: #ccc;
+    font-size: 14px;
 }
 
-.days-expired {
-    color: var(--matrix-danger);
+.detail-actions-header {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-header {
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
     font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
 }
 
-.days-critical {
-    color: var(--matrix-warning);
-    font-weight: 600;
+.btn-primary {
+    background: linear-gradient(135deg, #00ff41, #7fff7f);
+    color: #000;
+    border: 1px solid #00ff41;
 }
 
-.days-ok {
-    color: var(--matrix-success);
+.btn-primary:hover {
+    background: linear-gradient(135deg, #7fff7f, #00ff41);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 255, 65, 0.4);
 }
 
-.scadenza-actions {
-    min-width: 40px;
+.btn-secondary {
+    background: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.4);
+}
+
+.btn-secondary:hover {
+    background: rgba(108, 117, 125, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
+}
+
+/* Alert Section */
+.alert-section {
+    margin-bottom: 25px;
 }
 
 .alert-box {
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
+    gap: 15px;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid;
+    animation: pulse-border 2s infinite;
 }
 
 .alert-box.danger {
     background: rgba(220, 53, 69, 0.1);
-    border: 1px solid var(--matrix-danger);
-    color: var(--matrix-danger);
+    border-color: #dc3545;
+    color: #dc3545;
 }
 
 .alert-box.critical {
-    background: rgba(255, 165, 2, 0.1);
-    border: 1px solid var(--matrix-warning);
-    color: var(--matrix-warning);
-}
-
-.alert-box.warning {
     background: rgba(255, 193, 7, 0.1);
-    border: 1px solid #ffc107;
+    border-color: #ffc107;
     color: #ffc107;
 }
 
+.alert-box.warning {
+    background: rgba(253, 126, 20, 0.1);
+    border-color: #fd7e14;
+    color: #fd7e14;
+}
+
 .alert-box.info {
-    background: rgba(0, 123, 255, 0.1);
-    border: 1px solid #007bff;
-    color: #007bff;
+    background: rgba(23, 162, 184, 0.1);
+    border-color: #17a2b8;
+    color: #17a2b8;
 }
 
 .alert-box i {
-    font-size: 1.2rem;
-    margin-top: 0.1rem;
+    font-size: 24px;
+    margin-top: 2px;
+    flex-shrink: 0;
 }
 
-.alert-box strong {
+.alert-content strong {
     display: block;
-    margin-bottom: 0.25rem;
+    font-size: 16px;
+    margin-bottom: 5px;
+    font-weight: 700;
 }
 
-.alert-box p {
+.alert-content p {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+@keyframes pulse-border {
+    0% { border-opacity: 1; }
+    50% { border-opacity: 0.7; }
+    100% { border-opacity: 1; }
+}
+
+/* Grid delle Sezioni */
+.detail-sections-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+.detail-card.full-width {
+    grid-column: span 2;
+}
+
+/* Card Dettaglio */
+.detail-card {
+    background: rgba(0, 20, 0, 0.4);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.detail-card:hover {
+    border-color: rgba(0, 255, 65, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 255, 65, 0.1);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.08), rgba(0, 255, 65, 0.03));
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.card-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-icon i {
+    color: #00ff41;
+    font-size: 18px;
+}
+
+.card-title h3 {
+    margin: 0;
+    color: #00ff41;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.card-title p {
+    margin: 3px 0 0 0;
+    color: #999;
+    font-size: 13px;
+}
+
+.card-content {
+    padding: 25px;
+}
+
+/* Items Dettaglio */
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #999;
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 140px;
+}
+
+.detail-value {
+    color: #fff;
+    font-weight: 600;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Badges Specifici */
+.vehicle-plate {
+    color: #00ff41;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    background: rgba(0, 255, 65, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.year-badge {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.km-value {
+    color: #00ff41;
+    font-weight: 700;
+}
+
+.nucleo-badge {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.deadline-type {
+    color: #00ff41;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.date-info {
+    color: #00ff41;
+    font-weight: 600;
+}
+
+.day-of-week {
+    color: #999;
+    font-size: 12px;
+    font-weight: 400;
+    margin-left: 5px;
+}
+
+/* Days Counter */
+.days-expired {
+    color: #dc3545;
+    font-weight: 700;
+    background: rgba(220, 53, 69, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.days-today {
+    color: #ffc107;
+    font-weight: 700;
+    background: rgba(255, 193, 7, 0.2);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 193, 7, 0.4);
+    animation: pulse 2s infinite;
+}
+
+.days-remaining {
+    color: #00ff41;
+    font-weight: 700;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Urgency Badges */
+.urgency-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-transform: uppercase;
+}
+
+.urgency-scaduta {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+.urgency-critica {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+.urgency-urgente {
+    background: rgba(253, 126, 20, 0.2);
+    color: #fd7e14;
+    border: 1px solid rgba(253, 126, 20, 0.4);
+}
+
+.urgency-normale {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.4);
+}
+
+/* Notification Status */
+.notification-setting {
+    color: #00ff41;
+    background: rgba(0, 255, 65, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.notification-active {
+    color: #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    animation: glow 2s infinite;
+}
+
+.notification-expired {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.notification-pending {
+    color: #17a2b8;
+    background: rgba(23, 162, 184, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(23, 162, 184, 0.3);
+}
+
+@keyframes glow {
+    0% { box-shadow: 0 0 5px rgba(255, 193, 7, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(255, 193, 7, 0.6); }
+    100% { box-shadow: 0 0 5px rgba(255, 193, 7, 0.3); }
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-attiva {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.4);
+}
+
+.status-inattiva {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+.status-completata {
+    background: rgba(23, 162, 184, 0.2);
+    color: #17a2b8;
+    border: 1px solid rgba(23, 162, 184, 0.4);
+}
+
+/* Note Content */
+.notes-content {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    color: #fff;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+/* Related Lists */
+.related-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.related-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.related-item:hover {
+    border-color: rgba(0, 255, 65, 0.4);
+    background: rgba(0, 255, 65, 0.05);
+}
+
+.related-item.urgency-scaduta {
+    border-left: 4px solid #dc3545;
+}
+
+.related-item.urgency-critica {
+    border-left: 4px solid #ffc107;
+}
+
+.related-item.urgency-urgente {
+    border-left: 4px solid #fd7e14;
+}
+
+.related-info {
+    flex: 1;
+}
+
+.related-title {
+    color: #00ff41;
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.related-details {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-size: 12px;
+    flex-wrap: wrap;
+}
+
+.related-date {
+    color: #999;
+}
+
+.related-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-related {
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    color: #00ff41;
+    padding: 6px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-related:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: translateY(-1px);
+}
+
+.view-all-link {
+    text-align: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.btn-view-all {
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    color: #00ff41;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.btn-view-all:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Text Muted */
+.text-muted {
+    color: #999;
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .detail-sections-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-card.full-width {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .modern-detail-container {
+        padding: 15px;
+    }
+    
+    .detail-header-modern {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .detail-actions-header {
+        justify-content: center;
+    }
+    
+    .alert-box {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .detail-label {
+        min-width: auto;
+        font-size: 12px;
+    }
+    
+    .detail-value {
+        text-align: left;
+    }
+    
+    .related-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
 }
 </style>
-
 {% endblock %}

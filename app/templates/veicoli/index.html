@@ -2,6 +2,42 @@
 
 {% block title %}Gestione Veicoli - Matrix Fleet Manager{% endblock %}
 
+{% block print_actions %}
+<div class="print-actions" style="margin-bottom: 1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+    <button class="btn btn-outline-light" type="button" onclick="window.print()">
+        <i class="fas fa-print"></i> Stampa pagina
+    </button>
+    <button class="btn btn-outline-light" type="button" onclick="printSelectedArea()">
+        <i class="fas fa-cut"></i> Stampa selezione
+    </button>
+    {% if veicoli.pages > 1 %}
+    <div class="pagination" style="display:flex; align-items:center; gap:0.3rem;">
+        {% if veicoli.has_prev %}
+            <a href="{{ url_for('veicoli.index_veicoli', page=veicoli.prev_num) }}" class="pagination-link">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        {% for page_num in veicoli.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != veicoli.page %}
+                    <a href="{{ url_for('veicoli.index_veicoli', page=page_num) }}" class="pagination-link">{{ page_num }}</a>
+                {% else %}
+                    <span class="pagination-current">{{ page_num }}</span>
+                {% endif %}
+            {% else %}
+                <span class="pagination-ellipsis">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if veicoli.has_next %}
+            <a href="{{ url_for('veicoli.index_veicoli', page=veicoli.next_num) }}" class="pagination-link">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="page-container">
     <div class="page-header">
@@ -10,14 +46,14 @@
             GESTIONE VEICOLI
         </h1>
         <div class="page-actions">
-            <a href="{{ url_for('veicoli.aggiungi_veicolo') }}" class="btn btn-primary">
+            <a href="{{ url_for('veicoli.nuovo_veicolo') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Aggiungi Veicolo
             </a>
         </div>
     </div>
 
     <div class="vehicles-table-container">
-        <table class="vehicles-table">
+        <table class="vehicles-table resizable-table">
             <thead>
                 <tr>
                     <th class="col-targa">Targa</th>
@@ -76,13 +112,13 @@
                     </td>
                     <td class="col-actions">
                         <div class="action-buttons">
-                            <a href="{{ url_for('veicoli.dettaglio_veicolo', id=veicolo.id) }}" class="btn-action btn-view" title="Visualizza">
+                            <a href="{{ url_for('veicoli.dettaglio_veicolo', veicolo_id=veicolo.id) }}" class="btn-action btn-view" title="Visualizza">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ url_for('veicoli.modifica_veicolo', id=veicolo.id) }}" class="btn-action btn-edit" title="Modifica">
+                            <a href="{{ url_for('veicoli.modifica_veicolo', veicolo_id=veicolo.id) }}" class="btn-action btn-edit" title="Modifica">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{{ url_for('veicoli.elimina_veicolo', id=veicolo.id) }}" class="btn-action btn-delete" title="Elimina" onclick="return confirm('Sei sicuro di voler eliminare questo veicolo?')">
+                            <a href="{{ url_for('veicoli.elimina_veicolo', veicolo_id=veicolo.id) }}" class="btn-action btn-delete" title="Elimina" onclick="return confirm('Sei sicuro di voler eliminare questo veicolo?')">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>

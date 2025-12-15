@@ -1,0 +1,66 @@
+
+{% extends "base.html" %}
+{% block content %}
+<h2>Scheda Kilometrica - Trimestre {{ trimestre }} / {{ anno }}</h2>
+
+<!-- Pulsante larghezza colonne -->
+<div class="mb-2">
+    <button type="button" id="toggleColumnsBtnTrimestre" class="btn btn-outline-light btn-sm">
+        <i class="fas fa-arrows-left-right"></i> Larghezza colonne
+    </button>
+</div>
+<!-- Buttons to navigate and view the aggregated quarterly sheet -->
+<div class="mb-3">
+    <a class="btn btn-secondary" href="{{ url_for('scheda_km.select_scheda_km') }}">Torna alla selezione</a>
+    <a class="btn btn-outline-light" href="{{ url_for('scheda_km.scheda_km_trimestre_sheet', anno=anno, q=trimestre) }}">Scheda trimestrale</a>
+</div>
+<table class="km-table">
+    <thead>
+        <tr>
+            <th>Veicolo</th>
+            <th>Targa</th>
+            <th>Mese</th>
+            <th>Km Iniziali</th>
+            <th>Km Finali</th>
+            <th>Km Percorsi</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in records %}
+        <tr>
+            <!-- Display brand and model of the vehicle instead of an undefined 'nome' field. -->
+            <td>{{ r.veicolo.marca }} {{ r.veicolo.modello }}</td>
+            <td>{{ r.veicolo.targa }}</td>
+            <td>{{ r.mese }}</td>
+            <td>{{ r.km_iniziali }}</td>
+            <td>{{ r.km_finali }}</td>
+            <td>{{ r.km_percorsi }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('toggleColumnsBtnTrimestre');
+    const table = document.querySelector('.km-table');
+    // Ripristina stato salvato
+    const stored = localStorage.getItem('kmTrimestreExpanded');
+    if (stored === 'true') {
+        table.classList.add('expanded-columns');
+    }
+    btn.addEventListener('click', function() {
+        table.classList.toggle('expanded-columns');
+        const expanded = table.classList.contains('expanded-columns');
+        localStorage.setItem('kmTrimestreExpanded', expanded);
+    });
+});
+</script>
+<style>
+.km-table th, .km-table td { white-space: nowrap; }
+.km-table.expanded-columns th, .km-table.expanded-columns td { white-space: normal; word-break: break-word; }
+</style>
+{% endblock %}

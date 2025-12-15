@@ -54,6 +54,23 @@ def add_missing_columns():
             ('scadenze', 'nucleo', 'VARCHAR(50)', "'Via Capitel'"),
             
             ('users', 'ruolo', 'VARCHAR(20)', "'user'"),  # NUOVO CAMPO RUOLO
+
+            # Colonne aggiuntive per la tabella sinistri (versioni >=1.25)
+            # Questi campi permettono di memorizzare informazioni più dettagliate
+            # sui sinistri (numero della pratica, contatti, dati delle patenti ecc.).
+            # Le colonne sono create con default NULL per garantire la compatibilità
+            # con database esistenti.
+            ('sinistri', 'numero_sinistro', 'VARCHAR(50)', 'NULL'),
+            ('sinistri', 'cellulare_controparte', 'VARCHAR(30)', 'NULL'),
+            ('sinistri', 'cellulare_autista', 'VARCHAR(30)', 'NULL'),
+            ('sinistri', 'numero_patente_autista', 'VARCHAR(50)', 'NULL'),
+            ('sinistri', 'numero_patente_controparte', 'VARCHAR(50)', 'NULL'),
+            ('sinistri', 'comune_patente_autista', 'VARCHAR(100)', 'NULL'),
+            ('sinistri', 'comune_patente_controparte', 'VARCHAR(100)', 'NULL'),
+            ('sinistri', 'data_emissione_patente_autista', 'DATE', 'NULL'),
+            ('sinistri', 'data_scadenza_patente_autista', 'DATE', 'NULL'),
+            ('sinistri', 'data_emissione_patente_controparte', 'DATE', 'NULL'),
+            ('sinistri', 'data_scadenza_patente_controparte', 'DATE', 'NULL'),
         ]
         
         for table, column, col_type, default in columns_to_add:

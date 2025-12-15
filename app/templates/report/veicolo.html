@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{#
+  Template per la pagina di report di un veicolo.
+
+  La pagina consente all'utente di visualizzare un riepilogo delle principali
+  informazioni del veicolo (targa, marca, modello, chilometri), le
+  manutenzioni da fare e quelle eseguite, le scadenze attive e scadute, e i
+  fornitori coinvolti. L'utente può selezionare tramite caselle di spunta le
+  sezioni che desidera includere nella stampa. L'interfaccia è pensata per
+  essere stampata con il pulsante "Stampa pagina" oppure esportata tramite
+  "Stampa selezione" selezionando l'area con il mouse.
+#}
+
+{% block title %}Report veicolo {{ veicolo.targa }}{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <h1 class="page-title"><i class="fas fa-car"></i> Report veicolo {{ veicolo.targa }}</h1>
+
+    <p class="mb-3">Seleziona le sezioni da includere nella stampa:</p>
+    <div class="report-controls" style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+        <label><input type="checkbox" id="chk-dati" checked> Dati veicolo</label>
+        <label><input type="checkbox" id="chk-manut-da-fare" checked> Manutenzioni da fare</label>
+        <label><input type="checkbox" id="chk-manut-eseguite" checked> Manutenzioni eseguite</label>
+        <label><input type="checkbox" id="chk-scadenze-attive" checked> Scadenze attive</label>
+        <label><input type="checkbox" id="chk-scadenze-scadute" checked> Scadenze scadute</label>
+        <label><input type="checkbox" id="chk-fornitori" checked> Fornitori</label>
+    </div>
+
+    {# Dati di base del veicolo #}
+    <section id="section-dati-veicolo" class="report-section" style="margin-bottom:2rem;">
+        <h3><i class="fas fa-id-card"></i> Dati veicolo</h3>
+        <table class="km-table">
+            <tbody>
+                <tr><th>Targa</th><td>{{ veicolo.targa }}</td></tr>
+                <tr><th>Marca</th><td>{{ veicolo.marca }}</td></tr>
+                <tr><th>Modello</th><td>{{ veicolo.modello }}</td></tr>
+                <tr><th>Anno immatricolazione</th><td>{{ veicolo.anno_immatricolazione }}</td></tr>
+                <tr><th>Data immatricolazione</th><td>{{ veicolo.data_immatricolazione.strftime('%d/%m/%Y') }}</td></tr>
+                <tr><th>Km attuali</th><td>{{ veicolo.km_attuali | format_number }} km</td></tr>
+                <tr><th>Carburante</th><td>{{ veicolo.carburante_display }}</td></tr>
+                <tr><th>Stato</th><td>{{ veicolo.stato }}</td></tr>
+                <tr><th>Società noleggio</th><td>{{ veicolo.societa_noleggio.ragione_sociale if veicolo.societa_noleggio else '-' }}</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    {# Manutenzioni da fare #}
+    <section id="section-manut-da-fare" class="report-section" style="margin-bottom:2rem;">
+        <h3><i class="fas fa-tools"></i> Manutenzioni da fare</h3>
+        {% if manutenzioni_da_fare %}
+            <table class="km-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Descrizione</th>
+                        <th>Fornitore</th>
+                        <th>Stato</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for m in manutenzioni_da_fare %}
+                    <tr>
+                        <td>{{ m.data_intervento.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ m.tipo_intervento }}</td>
+                        <td>{{ m.descrizione or '-' }}</td>
+                        <td>{{ m.fornitore.ragione_sociale if m.fornitore else '-' }}</td>
+                        <td>{{ m.stato }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Nessuna manutenzione da fare.</p>
+        {% endif %}
+    </section>
+
+    {# Manutenzioni eseguite #}
+    <section id="section-manut-eseguite" class="report-section" style="margin-bottom:2rem;">
+        <h3><i class="fas fa-check-circle"></i> Manutenzioni eseguite</h3>
+        {% if manutenzioni_eseguite %}
+            <table class="km-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Descrizione</th>
+                        <th>Fornitore</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for m in manutenzioni_eseguite %}
+                    <tr>
+                        <td>{{ m.data_intervento.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ m.tipo_intervento }}</td>
+                        <td>{{ m.descrizione or '-' }}</td>
+                        <td>{{ m.fornitore.ragione_sociale if m.fornitore else '-' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Nessuna manutenzione eseguita.</p>
+        {% endif %}
+    </section>
+
+    {# Scadenze attive #}
+    <section id="section-scadenze-attive" class="report-section" style="margin-bottom:2rem;">
+        <h3><i class="fas fa-calendar-check"></i> Scadenze attive</h3>
+        {% if scadenze_attive %}
+            <table class="km-table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Data</th>
+                        <th>Stato</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for s in scadenze_attive %}
+                    <tr>
+                        <td>{{ s.tipo_scadenza }}</td>
+                        <td>{{ s.data_scadenza.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ s.stato }}</td>
+                        <td>{{ s.note or '-' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Nessuna scadenza attiva.</p>
+        {% endif %}
+    </section>
+
+    {# Scadenze scadute #}
+    <section id="section-scadenze-scadute" class="report-section" style="margin-bottom:2rem;">
+        <h3><i class="fas fa-calendar-times"></i> Scadenze scadute</h3>
+        {% if scadenze_scadute %}
+            <table class="km-table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Data</th>
+                        <th>Stato</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for s in scadenze_scadute %}
+                    <tr>
+                        <td>{{ s.tipo_scadenza }}</td>
+                        <td>{{ s.data_scadenza.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ s.stato }}</td>
+                        <td>{{ s.note or '-' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Nessuna scadenza scaduta.</p>
+        {% endif %}
+    </section>
+
+    {# Fornitori utilizzati #}
+    <section id="section-fornitori" class="report-section" style="margin-bottom:2rem;">
+        <h3><i class="fas fa-people-carry"></i> Fornitori coinvolti</h3>
+        {% if fornitori_utilizzati %}
+            <table class="km-table">
+                <thead>
+                    <tr>
+                        <th>Ragione sociale</th>
+                        <th>Settori</th>
+                        <th>Telefoni</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for f in fornitori_utilizzati.values() %}
+                    <tr>
+                        <td>{{ f.ragione_sociale }}</td>
+                        <td>{{ f.settori_display }}</td>
+                        <td>{{ ', '.join(f.telefoni_lista) if f.telefoni_lista else '-' }}</td>
+                        <td>{{ ', '.join(f.email_lista) if f.email_lista else '-' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Nessun fornitore registrato per questo veicolo.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Associa ogni checkbox alla sezione corrispondente
+    const mappings = {
+        'chk-dati': 'section-dati-veicolo',
+        'chk-manut-da-fare': 'section-manut-da-fare',
+        'chk-manut-eseguite': 'section-manut-eseguite',
+        'chk-scadenze-attive': 'section-scadenze-attive',
+        'chk-scadenze-scadute': 'section-scadenze-scadute',
+        'chk-fornitori': 'section-fornitori'
+    };
+    Object.keys(mappings).forEach(function(chkId) {
+        const checkbox = document.getElementById(chkId);
+        const sectionId = mappings[chkId];
+        const section = document.getElementById(sectionId);
+        // Aggiorna visibilità all'inizio
+        section.style.display = checkbox.checked ? '' : 'none';
+        checkbox.addEventListener('change', function() {
+            section.style.display = this.checked ? '' : 'none';
+        });
+    });
+});
+</script>
+
+<!-- Nascondi i controlli di selezione durante la stampa completa -->
+<style>
+@media print {
+    .report-controls {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}

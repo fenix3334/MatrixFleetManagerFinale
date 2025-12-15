@@ -4,7 +4,16 @@ Matrix Fleet Manager
 """
 
 from flask_login import current_user
-from app.models import Nucleo, Veicolo, Fornitore, Manutenzione, Scadenza
+from app.models import (
+    Nucleo,
+    Veicolo,
+    Fornitore,
+    Manutenzione,
+    Scadenza,
+    ManutenzionePreventiva,
+    Notifica,
+    Sinistro,
+)
 from sqlalchemy import and_
 
 def get_nuclei_disponibili():
@@ -12,7 +21,7 @@ def get_nuclei_disponibili():
     if not current_user.is_authenticated:
         return []
     
-    if current_user.is_admin:
+    if current_user.ruolo == 'admin':
         # Admin vede tutti i nuclei attivi
         return Nucleo.query.filter_by(attivo=True).order_by(Nucleo.nome).all()
     else:
@@ -24,12 +33,6 @@ def get_nucleo_corrente():
     if not current_user.is_authenticated:
         return None
     return current_user.nucleo
-
-def is_admin_user():
-    """Verifica se l'utente corrente è admin"""
-    if not current_user.is_authenticated:
-        return False
-    return current_user.is_admin
 
 def get_nucleo_corrente_admin():
     """
@@ -88,6 +91,28 @@ def get_manutenzioni_by_nucleo():
     query = Manutenzione.query
     return filter_by_nucleo(query, Manutenzione)
 
+def get_manutenzioni_preventive_by_nucleo():
+    """
+    Restituisce le manutenzioni preventive filtrate per nucleo utente.
+
+    Questo metodo sfrutta il medesimo meccanismo di filtro delle altre entità,
+    utilizzando il campo `nucleo` del record per determinare l'accesso.
+    """
+    query = ManutenzionePreventiva.query
+    return filter_by_nucleo(query, ManutenzionePreventiva)
+
+
+def get_sinistri_by_nucleo():
+    """
+    Restituisce i sinistri filtrati per nucleo utente.
+
+    Come per gli altri moduli, l'accesso è limitato ai record del nucleo
+    dell'utente normale, mentre l'admin può filtrare tramite la selezione
+    del nucleo nella barra in alto.
+    """
+    query = Sinistro.query
+    return filter_by_nucleo(query, Sinistro)
+
 def get_scadenze_by_nucleo():
     """Restituisce scadenze filtrate per nucleo utente"""
     query = Scadenza.query
@@ -101,8 +126,14 @@ def can_access_record(record):
     if not current_user.is_authenticated:
         return False
     
-    if current_user.is_admin:
-        return True
+    if current_user.ruolo == 'admin':
+        # Admin può accedere a tutto se non ha filtro
+        from flask import session
+        filtro_admin = session.get('admin_nucleo_filter', 'tutti')
+        if filtro_admin == 'tutti':
+            return True
+        # Se ha filtro, deve corrispondere
+        return hasattr(record, 'nucleo') and record.nucleo == filtro_admin
     
     # Verifica che il record abbia il campo nucleo e corrisponda
     if hasattr(record, 'nucleo'):
@@ -116,37 +147,14 @@ def get_veicoli_for_choices():
     return [(v.id, f"{v.targa} - {v.marca} {v.modello}") for v in veicoli]
 
 def get_fornitori_for_choices():
-    """Restituisce fornitori per dropdown nelle form (filtrati per nucleo)"""
-    fornitori = get_fornitori_by_nucleo().filter_by(attivo=True).order_by(Fornitore.ragione_sociale).all()
+    """Restituisce fornitori per dropdown nelle form.
+
+    Dalla versione v1.7 l'anagrafica fornitori è condivisa fra tutti i nuclei,
+    pertanto questa funzione non applica filtri sul campo `nucleo`.  Viene
+    restituito l'elenco di tutti i fornitori attivi, ordinati per ragione
+    sociale."""
+    fornitori = Fornitore.query.filter_by(attivo=True).order_by(Fornitore.ragione_sociale).all()
     return [(f.id, f.ragione_sociale) for f in fornitori]
-
-def get_societa_noleggio_for_choices():
-    """Restituisce società noleggio per dropdown (filtrati per nucleo)"""
-    # Le società noleggio sono nell'anagrafica fornitori
-    fornitori = get_fornitori_by_nucleo().filter(
-        and_(
-            Fornitore.attivo == True,
-            Fornitore.settore.contains('Noleggio')
-        )
-    ).order_by(Fornitore.ragione_sociale).all()
-    
-    choices = [('', 'Proprietà aziendale')]  # Opzione default
-    choices.extend([(f.id, f.ragione_sociale) for f in fornitori])
-    return choices
-
-def validate_nucleo_access(record_id, model_class):
-    """
-    Valida che l'utente possa accedere a un record specifico
-    Utilizzato nei decorator per route di dettaglio/modifica
-    """
-    if not current_user.is_authenticated:
-        return False
-    
-    record = model_class.query.get(record_id)
-    if not record:
-        return False
-    
-    return can_access_record(record)
 
 def get_stats_by_nucleo():
     """Calcola statistiche filtrate per nucleo utente o selezione admin"""
@@ -155,25 +163,42 @@ def get_stats_by_nucleo():
     if not current_user.is_authenticated:
         return stats
     
-    # Veicoli
-    veicoli_query = get_veicoli_by_nucleo()
+    # Determina filtro nucleo
+    if current_user.ruolo == 'admin':
+        from flask import session
+        # Admin può filtrare per nucleo specifico o vedere tutti
+        filtro_admin = session.get('admin_nucleo_filter', 'tutti')
+        
+        if filtro_admin == 'tutti':
+            # Admin vede tutto
+            veicoli_query = Veicolo.query
+            fornitori_query = Fornitore.query
+            manutenzioni_query = Manutenzione.query
+            scadenze_query = Scadenza.query
+        else:
+            # Admin con filtro specifico
+            veicoli_query = Veicolo.query.filter_by(nucleo=filtro_admin)
+            fornitori_query = Fornitore.query.filter_by(nucleo=filtro_admin)
+            manutenzioni_query = Manutenzione.query.filter_by(nucleo=filtro_admin)
+            scadenze_query = Scadenza.query.filter_by(nucleo=filtro_admin)
+    else:
+        # User normale vede solo il suo nucleo
+        nucleo_filter = current_user.nucleo
+        veicoli_query = Veicolo.query.filter_by(nucleo=nucleo_filter)
+        fornitori_query = Fornitore.query.filter_by(nucleo=nucleo_filter)
+        manutenzioni_query = Manutenzione.query.filter_by(nucleo=nucleo_filter)
+        scadenze_query = Scadenza.query.filter_by(nucleo=nucleo_filter)
+    
+    # Calcola statistiche
     stats['totale_veicoli'] = veicoli_query.count()
     stats['veicoli_attivi'] = veicoli_query.filter_by(stato='Attivo').count()
-    
-    # Fornitori
-    fornitori_query = get_fornitori_by_nucleo()
     stats['totale_fornitori'] = fornitori_query.count()
     stats['fornitori_attivi'] = fornitori_query.filter_by(attivo=True).count()
-    
-    # Manutenzioni
-    manutenzioni_query = get_manutenzioni_by_nucleo()
     stats['totale_manutenzioni'] = manutenzioni_query.count()
     stats['manutenzioni_da_fare'] = manutenzioni_query.filter_by(stato='Da Fare').count()
     
-    # Scadenze
-    from sqlalchemy import func, text
-    scadenze_query = get_scadenze_by_nucleo()
-    stats['totale_scadenze'] = scadenze_query.count()
+    # Scadenze urgenti (prossimi 30 giorni)
+    from sqlalchemy import text
     stats['scadenze_urgenti'] = scadenze_query.filter(
         and_(
             Scadenza.stato == 'Attiva',
@@ -184,11 +209,8 @@ def get_stats_by_nucleo():
     return stats
 
 def get_nucleo_info():
-    """Restituisce informazioni sul nucleo correntemente visualizzato"""
+    """Restituisce informazioni sul nucleo corrente per l'interfaccia"""
     from flask import session
-    
-    if not current_user.is_authenticated:
-        return None
     
     if current_user.ruolo == 'admin':
         filtro_admin = session.get('admin_nucleo_filter', 'tutti')
@@ -224,15 +246,6 @@ def get_nucleo_info():
             'descrizione': nucleo_obj.descrizione if nucleo_obj else '',
             'filtro_attivo': current_user.nucleo
         }
-
-def set_nucleo_on_create(form_data):
-    """
-    Imposta automaticamente il nucleo sui nuovi record
-    Da chiamare prima del salvataggio
-    """
-    if current_user.is_authenticated and not current_user.is_admin:
-        form_data['nucleo'] = current_user.nucleo
-    return form_data
 
 def get_dashboard_data():
     """Restituisce tutti i dati necessari per la dashboard filtrati per nucleo o selezione admin"""
