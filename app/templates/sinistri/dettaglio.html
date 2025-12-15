@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+
+{% block title %}Dettaglio Sinistro - {{ sinistro.veicolo.targa }}{% endblock %}
+
+{% block content %}
+<div class="modern-detail-container">
+    <div class="detail-header-modern">
+        <div class="detail-title-section">
+            <div class="detail-icon-wrapper">
+                <i class="fas fa-car-crash"></i>
+            </div>
+            <div class="detail-title-info">
+                <h1 class="detail-title-main">SINISTRO</h1>
+                <p class="detail-subtitle">
+                    <span class="vehicle-plate-header">{{ sinistro.veicolo.targa }}</span>
+                    Dettaglio completo sinistro
+                </p>
+            </div>
+        </div>
+        <div class="detail-actions-header">
+            <a href="{{ url_for('sinistri.modifica_sinistro', sinistro_id=sinistro.id) }}" class="btn-header btn-primary">
+                <i class="fas fa-edit"></i>
+                <span>Modifica</span>
+            </a>
+            <a href="{{ url_for('sinistri.index_sinistri') }}" class="btn-header btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Lista Sinistri</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="detail-sections-grid">
+        <!-- SEZIONE VEICOLO -->
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Veicolo</h3>
+                    <p>Informazioni veicolo</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Targa:</span>
+                    <span class="detail-value vehicle-plate">{{ sinistro.veicolo.targa }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Marca/Modello:</span>
+                    <span class="detail-value">{{ sinistro.veicolo.marca }} {{ sinistro.veicolo.modello }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Anno:</span>
+                    <span class="detail-value">{{ sinistro.veicolo.anno_immatricolazione }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Nucleo:</span>
+                    <span class="detail-value">{{ sinistro.nucleo }}</span>
+                </div>
+            </div>
+        </div>
+        <!-- SEZIONE DATI SINISTRO -->
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Dati Sinistro</h3>
+                    <p>Informazioni base</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Data:</span>
+                    <span class="detail-value">{{ sinistro.data_sinistro.strftime('%d/%m/%Y') if sinistro.data_sinistro else '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Luogo:</span>
+                    <span class="detail-value">{{ sinistro.luogo or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Tipo:</span>
+                    <span class="detail-value">{{ sinistro.tipo }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Veicoli coinvolti:</span>
+                    <span class="detail-value">{{ sinistro.veicoli_coinvolti or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Numero sinistro:</span>
+                    <span class="detail-value">{{ sinistro.numero_sinistro or '—' }}</span>
+                </div>
+            </div>
+        </div>
+        <!-- SEZIONE DESCRIZIONE -->
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-align-left"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Descrizione</h3>
+                    <p>Dettagli del sinistro</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <p>{{ sinistro.descrizione or 'Nessuna descrizione disponibile.' }}</p>
+            </div>
+        </div>
+        <!-- SEZIONE DATI AUTISTA -->
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Dati Autista</h3>
+                    <p>Contatti e patente del nostro autista</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Cellulare autista:</span>
+                    <span class="detail-value">{{ sinistro.cellulare_autista or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Numero patente autista:</span>
+                    <span class="detail-value">{{ sinistro.numero_patente_autista or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Comune patente autista:</span>
+                    <span class="detail-value">{{ sinistro.comune_patente_autista or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Data emissione patente autista:</span>
+                    <span class="detail-value">{{ sinistro.data_emissione_patente_autista.strftime('%d/%m/%Y') if sinistro.data_emissione_patente_autista else '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Data scadenza patente autista:</span>
+                    <span class="detail-value">{{ sinistro.data_scadenza_patente_autista.strftime('%d/%m/%Y') if sinistro.data_scadenza_patente_autista else '—' }}</span>
+                </div>
+            </div>
+        </div>
+        <!-- SEZIONE DATI CONTROPARTE -->
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Dati Controparte</h3>
+                    <p>Contatti e patente della controparte</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Cellulare controparte:</span>
+                    <span class="detail-value">{{ sinistro.cellulare_controparte or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Numero patente controparte:</span>
+                    <span class="detail-value">{{ sinistro.numero_patente_controparte or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Comune patente controparte:</span>
+                    <span class="detail-value">{{ sinistro.comune_patente_controparte or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Data emissione patente controparte:</span>
+                    <span class="detail-value">{{ sinistro.data_emissione_patente_controparte.strftime('%d/%m/%Y') if sinistro.data_emissione_patente_controparte else '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Data scadenza patente controparte:</span>
+                    <span class="detail-value">{{ sinistro.data_scadenza_patente_controparte.strftime('%d/%m/%Y') if sinistro.data_scadenza_patente_controparte else '—' }}</span>
+                </div>
+            </div>
+        </div>
+        <!-- SEZIONE ALLEGATI -->
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-paperclip"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Allegati</h3>
+                    <p>Documenti caricati</p>
+                </div>
+            </div>
+            <div class="card-content">
+                {% if sinistro.allegati %}
+                <ul class="attachments-list">
+                    {% for allegato in sinistro.allegati %}
+                    <li class="attachment-item">
+                        <span class="attachment-name"><i class="fas fa-file"></i> {{ allegato.filename }}</span>
+                        <a href="{{ url_for('allegati_sinistri.download_allegato_sinistro', allegato_id=allegato.id) }}" class="btn btn-sm btn-outline-primary" title="Scarica">
+                            <i class="fas fa-download"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('allegati_sinistri.delete_allegato_sinistro', allegato_id=allegato.id) }}" style="display:inline;" onsubmit="return confirm('Eliminare questo allegato?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Elimina">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>Nessun allegato presente.</p>
+                {% endif %}
+                <hr>
+                <form method="POST" action="{{ url_for('allegati_sinistri.upload_allegato_sinistro', sinistro_id=sinistro.id) }}" enctype="multipart/form-data" class="form-inline">
+                    {{ allegato_form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ allegato_form.file(class="form-control-file") }}
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm ml-2">
+                        <i class="fas fa-upload"></i> Carica file
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<style>
+/*
+ * Stili per la pagina di dettaglio sinistri
+ * Ricalcano il look & feel delle pagine di dettaglio di manutenzioni e scadenze
+ * per garantire coerenza e leggibilità: cornici, sfondi sfumati e testi ben contrastati.
+ */
+
+.modern-detail-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+    background: linear-gradient(135deg, rgba(0, 20, 0, 0.7), rgba(0, 40, 0, 0.3));
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Header Dettaglio */
+.detail-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+    padding: 25px;
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.05));
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.detail-title-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.detail-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #00ff41, #7fff7f);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 255, 65, 0.3);
+}
+
+.detail-icon-wrapper i {
+    font-size: 24px;
+    color: #000;
+}
+
+.detail-title-info h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #00ff41;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+.vehicle-plate-header {
+    font-family: 'Orbitron', monospace;
+    background: rgba(0, 255, 65, 0.2);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #00ff41;
+    margin-right: 8px;
+}
+
+.detail-subtitle {
+    margin: 5px 0 0 0;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.detail-actions-header {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-header {
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00ff41, #7fff7f);
+    color: #000;
+    border: 1px solid #00ff41;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #7fff7f, #00ff41);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 255, 65, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.4);
+}
+
+.btn-secondary:hover {
+    background: rgba(108, 117, 125, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
+}
+
+/* Grid delle sezioni */
+.detail-sections-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+.detail-card {
+    background: rgba(0, 20, 0, 0.4);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.detail-card:hover {
+    border-color: rgba(0, 255, 65, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 255, 65, 0.1);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.08), rgba(0, 255, 65, 0.03));
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.card-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-icon i {
+    color: #00ff41;
+    font-size: 18px;
+}
+
+.card-title h3 {
+    margin: 0;
+    color: #00ff41;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.card-title p {
+    margin: 3px 0 0 0;
+    color: #999;
+    font-size: 13px;
+}
+
+.card-content {
+    padding: 25px;
+}
+
+/* Items Dettaglio */
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #999;
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 140px;
+}
+
+.detail-value {
+    color: #fff;
+    font-weight: 600;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .detail-sections-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

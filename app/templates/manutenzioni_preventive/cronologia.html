@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Cronologia Manutenzione Preventiva - Matrix Fleet Manager{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-history"></i>
+            CRONOLOGIA PREVENTIVA
+        </h1>
+        <div class="page-actions">
+            <a href="{{ url_for('manutenzioni_preventive.index_preventive') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Ritorna alla lista
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h3>{{ preventiva.tipo_intervento }} – {{ preventiva.veicolo.targa }}</h3>
+            {% if logs %}
+            <div class="maintenance-table-container">
+            <table class="maintenance-table resizable-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Azione</th>
+                            <th>Utente</th>
+                            <th>Dettagli</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr class="maintenance-row">
+                            <td>{{ log.data_creazione.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ log.azione }}</td>
+                            <td>{% if log.user %}{{ log.user.username }}{% else %}N/D{% endif %}</td>
+                            <td>{{ log.dettagli }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>Non sono state registrate operazioni su questa manutenzione preventiva.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,33 +1,9 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.pyc
-venv/
-env/
-*.pyo
-
-# Database
-instance/
-*.db
-*.sqlite
-*.sqlite3
-
-# Documenti sensibili
-app/static/uploads/
-app/static/policy/
-
-# Backup e cartelle vecchie
-backups/
-DATABASE-NON TOCCARE/
-gestionale_flask_v1.21/
-
-# File temporanei
-*.log
-*.zip
-~$*
-notepad.gitignore
-
-# File sistema
-.DS_Store
-Thumbs.db
+__pycache__/ 
+*.pyc 
+instance/ 
+backups/ 
+*.db 
+venv/ 
+DATABASE-NON TOCCARE/ 
+gestionale_flask_v1.21/ 
+manuale*.pdf 

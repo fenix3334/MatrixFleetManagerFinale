@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titolo }} - Matrix Fleet Manager{% endblock %}
+
+{% block content %}
+<div class="modern-form-container">
+    <!-- Header del Form -->
+    <div class="form-header-modern">
+        <div class="form-title-section">
+            <div class="form-icon-wrapper">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="form-title-info">
+                <h1 class="form-title-main">{{ titolo }}</h1>
+                <p class="form-subtitle">Programmazione manutenzioni preventive</p>
+            </div>
+        </div>
+        <div class="form-actions-header">
+            <a href="{{ url_for('manutenzioni_preventive.index_preventive') }}" class="btn-header btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Lista Preventive</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Content -->
+    <form method="POST" class="matrix-form-modern">
+        {{ form.hidden_tag() }}
+        <div class="form-sections-grid">
+            <!-- Sezione Veicolo & Intervento -->
+            <div class="form-card" data-section="1">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-car-side"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>Veicolo & Intervento</h3>
+                        <p>Seleziona il veicolo e indica il tipo di intervento</p>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.veicolo_id.label(class="form-label-modern") }}
+                            <div class="input-wrapper select-wrapper">
+                                {{ form.veicolo_id(class="form-select-modern") }}
+                                <div class="input-icon">
+                                    <i class="fas fa-car"></i>
+                                </div>
+                            </div>
+                            {% if form.veicolo_id.errors %}
+                                <div class="form-errors-modern">
+                                    {% for error in form.veicolo_id.errors %}
+                                        <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            {{ form.tipo_intervento.label(class="form-label-modern") }}
+                            <div class="input-wrapper">
+                                {{ form.tipo_intervento(class="form-input-modern", placeholder="Es: Tagliando") }}
+                                <div class="input-icon">
+                                    <i class="fas fa-wrench"></i>
+                                </div>
+                            </div>
+                            {% if form.tipo_intervento.errors %}
+                                <div class="form-errors-modern">
+                                    {% for error in form.tipo_intervento.errors %}
+                                        <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sezione Intervallo -->
+            <div class="form-card" data-section="2">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-arrows-alt-h"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>Intervalli di manutenzione</h3>
+                        <p>Definisci ogni quanto effettuare l'intervento</p>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.intervallo_km.label(class="form-label-modern") }}
+                            <div class="input-wrapper">
+                                {{ form.intervallo_km(class="form-input-modern", placeholder="Es: 15000") }}
+                                <div class="input-icon">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                </div>
+                                <div class="input-suffix">km</div>
+                            </div>
+                            <small class="form-help-text"><i class="fas fa-info-circle"></i> Campo facoltativo</small>
+                        </div>
+                        <div class="form-group">
+                            {{ form.intervallo_mesi.label(class="form-label-modern") }}
+                            <div class="input-wrapper">
+                                {{ form.intervallo_mesi(class="form-input-modern", placeholder="Es: 12") }}
+                                <div class="input-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div class="input-suffix">mesi</div>
+                            </div>
+                            <small class="form-help-text"><i class="fas fa-info-circle"></i> Campo facoltativo</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sezione Ultimo intervento -->
+            <div class="form-card" data-section="3">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>Ultimo intervento</h3>
+                        <p>Dati facoltativi sull'ultimo intervento eseguito</p>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.ultimo_km.label(class="form-label-modern") }}
+                            <div class="input-wrapper">
+                                {{ form.ultimo_km(class="form-input-modern", placeholder="Es: 90000") }}
+                                <div class="input-icon">
+                                    <i class="fas fa-road"></i>
+                                </div>
+                                <div class="input-suffix">km</div>
+                            </div>
+                            <small class="form-help-text"><i class="fas fa-info-circle"></i> Campo facoltativo</small>
+                        </div>
+                        <div class="form-group">
+                            {{ form.ultima_data.label(class="form-label-modern") }}
+                            <div class="input-wrapper">
+                                {{ form.ultima_data(class="form-input-modern") }}
+                                <div class="input-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                            </div>
+                            <small class="form-help-text"><i class="fas fa-info-circle"></i> Campo facoltativo</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sezione Note -->
+            <div class="form-card" data-section="4">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-sticky-note"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>Note aggiuntive</h3>
+                        <p>Ulteriori informazioni utili</p>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        {{ form.note.label(class="form-label-modern") }}
+                        <div class="input-wrapper">
+                            {{ form.note(class="form-input-modern", rows=4) }}
+                            <div class="input-icon">
+                                <i class="fas fa-pen"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Bottoni finali -->
+        <div class="form-footer-actions">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Salva
+            </button>
+            <a href="{{ url_for('manutenzioni_preventive.index_preventive') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Annulla
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

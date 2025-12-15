@@ -4,7 +4,7 @@ from app.models import Scadenza, Veicolo
 from app.forms.scadenze import ScadenzaForm
 from app.extensions import db
 from datetime import date
-from sqlalchemy import and_, text
+from sqlalchemy import and_, text, case
 
 # Importa utility per gestione nuclei
 from app.utils.nuclei import (
@@ -45,6 +45,15 @@ def index_scadenze():
     tipo_filter = request.args.get('tipo')
     urgenza_filter = request.args.get('urgenza')
     veicolo_filter = request.args.get('veicolo')
+    # Filtro rapido (attive/urgenti) compatibile con versione precedente
+    filtro_quick = request.args.get('filtro')
+    if filtro_quick:
+        # Se l'utente seleziona 'attive', setta il filtro stato
+        if filtro_quick == 'attive':
+            stato_filter = 'Attiva'
+        # Se seleziona 'urgenti', mostra scadenze entro 30 giorni
+        elif filtro_quick == 'urgenti':
+            urgenza_filter = 'urgenti'
     
     if stato_filter:
         scadenze_query = scadenze_query.filter_by(stato=stato_filter)
@@ -58,6 +67,8 @@ def index_scadenze():
     # Filtro urgenza (basato sui giorni alla scadenza)
     if urgenza_filter:
         oggi = date.today()
+        # Escludi le scadenze già rinnovate dalle viste di urgenza
+        scadenze_query = scadenze_query.filter(Scadenza.stato != 'Rinnovata')
         if urgenza_filter == 'scadute':
             scadenze_query = scadenze_query.filter(Scadenza.data_scadenza < oggi)
         elif urgenza_filter == 'critiche':
@@ -71,10 +82,17 @@ def index_scadenze():
                      Scadenza.data_scadenza <= text("date('now', '+30 days')"))
             )
     
-    # Paginazione
-    scadenze_paginate = scadenze_query.order_by(
-        Scadenza.data_scadenza.asc()
-    ).paginate(page=page, per_page=20, error_out=False)
+    # Ordinamento: mostra prima le scadenze non rinnovate (Attive/Scadute) e infine le rinnovate.
+    order_expr = case(
+        (Scadenza.stato == 'Rinnovata', 1),
+        else_=0
+    )
+    # Paginazione e ordinamento
+    scadenze_paginate = scadenze_query.order_by(order_expr.asc(), Scadenza.data_scadenza.asc()).paginate(
+        page=page,
+        per_page=20,
+        error_out=False
+    )
     
     # Statistiche per dashboard
     tutte_scadenze = get_scadenze_by_nucleo()
@@ -88,7 +106,8 @@ def index_scadenze():
             and_(Scadenza.data_scadenza >= oggi,
                  Scadenza.data_scadenza <= text("date('now', '+7 days')"))
         ).count(),
-        'urgenti': tutte_scadenze.filter(
+        # Escludi le scadenze rinnovate dal conteggio delle urgenti
+        'urgenti': tutte_scadenze.filter(Scadenza.stato != 'Rinnovata').filter(
             and_(Scadenza.data_scadenza > text("date('now', '+7 days')"),
                  Scadenza.data_scadenza <= text("date('now', '+30 days')"))
         ).count()
@@ -102,24 +121,32 @@ def index_scadenze():
     veicoli_disponibili = get_veicoli_for_choices()
     
     # ✅ FIX: Passa l'oggetto paginazione completo, non solo gli items
-    return render_template('scadenze/index.html',
-                         scadenze=scadenze_paginate,  # ✅ CORRETTO: oggetto paginazione completo
-                         stats=stats,
-                         stati=stati_disponibili,
-                         tipi=[t[0] for t in tipi_disponibili],
-                         veicoli=veicoli_disponibili,
-                         filtro_stato=stato_filter,
-                         filtro_tipo=tipo_filter,
-                         filtro_urgenza=urgenza_filter,
-                         filtro_veicolo=veicolo_filter)
+    return render_template(
+        'scadenze/index.html',
+        scadenze=scadenze_paginate,  # ✅ CORRETTO: oggetto paginazione completo
+        stats=stats,
+        stati=stati_disponibili,
+        tipi=[t[0] for t in tipi_disponibili],
+        veicoli=veicoli_disponibili,
+        filtro=filtro_quick,
+        filtro_stato=stato_filter,
+        filtro_tipo=tipo_filter,
+        filtro_urgenza=urgenza_filter,
+        filtro_veicolo=veicolo_filter
+    )
 
 @scadenze_bp.route('/dettaglio/<int:id>')
 @login_required
 def dettaglio_scadenza(id):
+    # Importa timedelta qui per passarlo al template
+    from datetime import timedelta
+    
     # Verifica accesso e ottieni scadenza
     scadenza = validate_scadenza_access(id)
     
-    return render_template('scadenze/dettaglio.html', scadenza=scadenza)
+    return render_template('scadenze/dettaglio.html', 
+                         scadenza=scadenza,
+                         timedelta=timedelta)  # Passa timedelta al template
 
 @scadenze_bp.route('/aggiungi', methods=['GET', 'POST'])
 @login_required
@@ -177,6 +204,15 @@ def modifica_scadenza(id):
     
     # Aggiorna choices per veicoli (filtrati per nucleo)
     form.veicolo_id.choices = get_veicoli_for_choices()
+    
+    # Assicurati che il veicolo associato alla scadenza sia presente nella
+    # lista, anche se non è più attivo.  Questo evita che la targa scompaia
+    # dal menu a discesa quando si modificano record storici.
+    current_vehicle = scadenza.veicolo
+    if current_vehicle and all(choice[0] != current_vehicle.id for choice in form.veicolo_id.choices):
+        form.veicolo_id.choices.append(
+            (current_vehicle.id, f"{current_vehicle.targa} - {current_vehicle.marca} {current_vehicle.modello}")
+        )
     
     # Se in modifica e il tipo_scadenza non è tra le opzioni predefinite, 
     # impostalo come "Altro" e popola il campo personalizzato

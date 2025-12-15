@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Seleziona Scheda Kilometrica{% endblock %}
+
+{% block content %}
+<style>
+  /* Contenitore esterno che racchiude l’intero calendario.  Ha un
+     bordo leggero, sfondo trasparente e padding per assomigliare ad
+     una card di grandi dimensioni.  Le dimensioni massime sono
+     limitate così da non occupare l’intera larghezza, mantenendo
+     l’allineamento centrato. */
+  .calendar-container {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  /* Griglia dei mesi: 3 colonne per riga.  Ogni cella ha altezza
+     definita per mantenere proporzioni simili a un quadrato.  I gap
+     tra le celle rendono visibili gli spazi come in un calendario. */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 100px;
+    gap: 0.5rem;
+  }
+  /* Singola cella del calendario.  Presenta bordo, sfondo scuro
+     semi-trasparente e un leggero effetto hover.  Il contenuto è
+     centrato verticalmente e orizzontalmente. */
+  .calendar-cell {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+  }
+  .calendar-cell:hover {
+    transform: scale(1.05);
+  }
+  /* Link all’interno della cella.  Eredita colori e peso del testo
+     dalla cella e non ha sottolineatura.  Il link occupa l’intera
+     cella per rendere cliccabile anche lo spazio vuoto. */
+  .calendar-cell a {
+    color: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .calendar-cell a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<div class="container">
+    <h1 class="page-title">Seleziona Scheda Kilometrica</h1>
+
+    <!-- Selezione anno -->
+    <div class="row mb-3">
+        <div class="col-auto">
+            <label for="annoSelect" class="form-label">Anno:</label>
+            <select id="annoSelect" class="form-select">
+                {% for year in years %}
+                    <option value="{{ year }}" {% if year == default_year %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Calendario mensile: 3 mesi per riga, 4 righe totali.  Ogni
+         cella rappresenta un mese.  L’intero calendario è contenuto
+         in un riquadro con bordo per migliorare la leggibilità. -->
+    <div class="calendar-container">
+        <div class="calendar-grid">
+        {% for num, name in months %}
+            <div class="calendar-cell">
+                <a class="month-link" data-month="{{ num }}" href="/scheda-km/{{ default_year }}/{{ num }}">{{ name }}</a>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Aggiorna i link delle carte dei mesi quando cambia l'anno selezionato.
+// Selezioniamo gli anchor con classe "month-link" all'interno delle carte
+// e aggiorniamo l'attributo href in base all'anno scelto.  In questo modo
+// i link vengono costruiti senza ricorrere a `url_for` con segnaposto.
+document.addEventListener('DOMContentLoaded', function() {
+    const yearSelect = document.getElementById('annoSelect');
+    function updateLinks() {
+        const year = yearSelect.value;
+        document.querySelectorAll('.month-link').forEach(link => {
+            const month = link.getAttribute('data-month');
+            link.href = '/scheda-km/' + year + '/' + month;
+        });
+    }
+    yearSelect.addEventListener('change', updateLinks);
+    updateLinks();
+});
+</script>
+{% endblock %}
+{% endblock %}

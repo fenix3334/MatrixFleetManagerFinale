@@ -2,6 +2,44 @@
 
 {% block title %}Gestione Fornitori - Matrix Fleet Manager{% endblock %}
 
+{% block print_actions %}
+<div class="print-actions" style="margin-bottom: 1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+    <!-- Stampa pagina completa -->
+    <button class="btn btn-outline-light" type="button" onclick="window.print()">
+        <i class="fas fa-print"></i> Stampa pagina
+    </button>
+    <!-- Stampa selezione -->
+    <button class="btn btn-outline-light" type="button" onclick="printSelectedArea()">
+        <i class="fas fa-cut"></i> Stampa selezione
+    </button>
+    {% if fornitori.pages > 1 %}
+    <div class="pagination" style="display:flex; align-items:center; gap:0.3rem;">
+        {% if fornitori.has_prev %}
+            <a href="{{ url_for('fornitori.index_fornitori', page=fornitori.prev_num) }}" class="pagination-link">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        {% for page_num in fornitori.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != fornitori.page %}
+                    <a href="{{ url_for('fornitori.index_fornitori', page=page_num) }}" class="pagination-link">{{ page_num }}</a>
+                {% else %}
+                    <span class="pagination-current">{{ page_num }}</span>
+                {% endif %}
+            {% else %}
+                <span class="pagination-ellipsis">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if fornitori.has_next %}
+            <a href="{{ url_for('fornitori.index_fornitori', page=fornitori.next_num) }}" class="pagination-link">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="page-container">
     <div class="page-header">
@@ -17,7 +55,7 @@
     </div>
 
     <div class="suppliers-table-container">
-        <table class="suppliers-table">
+        <table class="suppliers-table resizable-table">
             <thead>
                 <tr>
                     <th class="col-company">Ragione Sociale</th>
@@ -215,7 +253,7 @@
 .col-phone { width: 15%; }
 .col-email { width: 18%; }
 .col-status { width: 8%; }
-.col-actions { width: 7%; }
+.col-actions { width: 10%; }
 
 /* Righe della tabella */
 .supplier-row {

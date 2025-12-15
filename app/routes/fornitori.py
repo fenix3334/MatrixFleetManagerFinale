@@ -13,33 +13,30 @@ def clean_field(value):
     return None
 
 def get_fornitori_query():
-    """Restituisce query fornitori filtrata per nucleo utente o selezione admin"""
+    """Restituisce la query dei fornitori.
+
+    Dalla versione v1.7 l'anagrafica fornitori è unica e condivisa tra tutti i
+    nuclei.  Non viene più applicato alcun filtro basato sul campo `nucleo` né
+    per gli utenti standard né per gli amministratori: l'intero elenco dei
+    fornitori viene restituito in ogni contesto.  Altri moduli (come veicoli o
+    manutenzioni) possono continuare ad utilizzare l'impostazione
+    `admin_nucleo_filter` per filtrare i dati, ma per i fornitori questa
+    impostazione non influisce più sulla query."""
     from flask import session
-    
-    if current_user.ruolo == 'admin':
-        # Admin può filtrare per nucleo specifico o vedere tutti
-        filtro_admin = session.get('admin_nucleo_filter', 'tutti')
-        
-        if filtro_admin == 'tutti':
-            # Admin vede tutti i fornitori
-            return Fornitore.query
-        else:
-            # Admin con filtro specifico
-            return Fornitore.query.filter_by(nucleo=filtro_admin)
-    else:
-        # User normale vede solo fornitori del suo nucleo
-        return Fornitore.query.filter_by(nucleo=current_user.nucleo)
+
+    # A partire dalla v1.7 non si applica più alcun filtro per nucleo ai fornitori,
+    # indipendentemente dal ruolo.  L'anagrafica è condivisa tra tutti i nuclei.
+    return Fornitore.query
 
 def validate_fornitore_access(fornitore_id):
-    """Verifica che l'utente possa accedere al fornitore"""
+    """Restituisce l'oggetto fornitore se esiste.
+
+    A partire dalla versione v1.7 l'anagrafica fornitori è condivisa tra i nuclei,
+    pertanto tutti gli utenti (admin e non) possono visualizzare e modificare
+    qualsiasi fornitore.  Non viene più applicato il controllo di appartenenza
+    al nucleo per impedire l'accesso."""
     fornitore = Fornitore.query.get_or_404(fornitore_id)
-    
-    if current_user.ruolo == 'admin':
-        return fornitore
-    
-    if fornitore.nucleo != current_user.nucleo:
-        abort(403)  # Accesso negato
-    
+    # In modalità anagrafica unica non si eseguono restrizioni sul nucleo.
     return fornitore
 
 @fornitori_bp.route('/')

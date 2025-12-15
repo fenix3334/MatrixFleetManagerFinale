@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Policy &amp; Procedure - Matrix Fleet Manager{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-file-contract"></i>
+            POLICIES &amp; PROCEDURE
+        </h1>
+    </div>
+    <div class="policy-content card">
+        <div class="card-body">
+            <style>
+                /* Stili specifici per la visualizzazione delle policy in formato immagine */
+                .policy-section {
+                    margin-bottom: 2rem;
+                }
+                .policy-section-title {
+                    margin-bottom: 1rem;
+                    font-size: 1.25rem;
+                    color: var(--matrix-green);
+                }
+                .policy-images-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                }
+                .policy-image-wrapper {
+                    width: 100%;
+                    border: 1px solid var(--matrix-green);
+                    padding: 0.5rem;
+                    border-radius: 8px;
+                    background: var(--matrix-dark);
+                }
+                .policy-image {
+                    width: 100%;
+                    height: auto;
+                    display: block;
+                }
+
+                /* Rimuovi decorazioni dal link attorno all'immagine */
+                .policy-image-link {
+                    display: block;
+                    text-decoration: none;
+                    color: inherit;
+                }
+                .policy-image-link:hover img {
+                    filter: brightness(0.95);
+                }
+            </style>
+            {% if policy_docs %}
+                {% for doc in policy_docs %}
+                    <div class="policy-section">
+                        <h2 class="policy-section-title">Documento del {{ doc.date | replace('-', '/') }}</h2>
+                        <div class="policy-images-grid">
+                            {% for image in doc.files %}
+                                <div class="policy-image-wrapper">
+                                    <a href="{{ url_for('static', filename=image) }}" target="_blank" class="policy-image-link">
+                                        <img src="{{ url_for('static', filename=image) }}" alt="Documento del {{ doc.date }} pagina {{ loop.index }}" class="policy-image"/>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Non sono stati caricati documenti di policy.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

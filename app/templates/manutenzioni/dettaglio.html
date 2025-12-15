@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Dettaglio Manutenzione {{ manutenzione.tipo_intervento }} - Matrix Fleet Manager{% endblock %}
+{% block title %}Manutenzione {{ manutenzione.tipo_intervento }} - {{ manutenzione.veicolo.targa }}{% endblock %}
 
 {% block content %}
-<div class="detail-container">
-    <!-- Header del Dettaglio -->
+<div class="modern-detail-container">
     <div class="detail-header-modern">
         <div class="detail-title-section">
             <div class="detail-icon-wrapper">
@@ -12,210 +11,117 @@
             </div>
             <div class="detail-title-info">
                 <h1 class="detail-title-main">{{ manutenzione.tipo_intervento }}</h1>
-                <p class="detail-subtitle">{{ manutenzione.veicolo.targa }} - {{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}</p>
-                <div class="detail-status-badge status-{{ manutenzione.stato.lower().replace(' ', '-') }}">
-                    <i class="fas fa-circle"></i>
-                    {{ manutenzione.stato }}
-                </div>
+                <p class="detail-subtitle">
+                    <span class="vehicle-plate-header">{{ manutenzione.veicolo.targa }}</span>
+                    Dettaglio completo intervento di manutenzione - Tutti i dati in sola lettura
+                </p>
             </div>
         </div>
         <div class="detail-actions-header">
-            <a href="{{ url_for('manutenzioni.index_manutenzioni') }}" class="btn-header btn-secondary">
-                <i class="fas fa-arrow-left"></i>
-                <span>Lista Manutenzioni</span>
-            </a>
             <a href="{{ url_for('manutenzioni.modifica_manutenzione', id=manutenzione.id) }}" class="btn-header btn-primary">
                 <i class="fas fa-edit"></i>
                 <span>Modifica</span>
             </a>
+            <a href="{{ url_for('manutenzioni.index_manutenzioni') }}" class="btn-header btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Lista Manutenzioni</span>
+            </a>
         </div>
     </div>
 
-    <!-- Griglia Dettagli -->
+    <!-- Grid delle Sezioni Informative -->
     <div class="detail-sections-grid">
         
-        <!-- SEZIONE 1: VEICOLO & FORNITORE -->
+        <!-- SEZIONE 1: DATI VEICOLO -->
         <div class="detail-card" data-section="1">
             <div class="card-header">
                 <div class="card-icon">
-                    <i class="fas fa-car-side"></i>
+                    <i class="fas fa-car"></i>
                 </div>
                 <div class="card-title">
-                    <h3>Veicolo & Fornitore</h3>
-                    <p>Informazioni su veicolo e fornitore del servizio</p>
+                    <h3>Dati Veicolo</h3>
+                    <p>Informazioni del veicolo interessato</p>
                 </div>
             </div>
             <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Veicolo</label>
-                        <div class="field-value primary">
-                            <i class="fas fa-car"></i>
-                            <a href="{{ url_for('veicoli.dettaglio_veicolo', id=manutenzione.veicolo.id) }}" class="vehicle-link">
-                                {{ manutenzione.veicolo.targa }} - {{ manutenzione.veicolo.marca }} {{ manutenzione.veicolo.modello }}
-                            </a>
-                        </div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">Nucleo</label>
-                        <div class="field-value">
-                            <span class="nucleo-badge nucleo-{{ manutenzione.nucleo.lower().replace(' ', '-') }}">
-                                <i class="fas fa-map-marker-alt"></i>
-                                {{ manutenzione.nucleo }}
-                            </span>
-                        </div>
-                    </div>
+                <div class="detail-item">
+                    <span class="detail-label">Targa:</span>
+                    <span class="detail-value vehicle-plate">{{ manutenzione.veicolo.targa }}</span>
                 </div>
-                
-                <div class="detail-row">
-                    <div class="detail-field full-width">
-                        <label class="field-label">Fornitore</label>
-                        <div class="field-value">
-                            {% if manutenzione.fornitore %}
-                                <i class="fas fa-building"></i>
-                                <a href="{{ url_for('fornitori.dettaglio_fornitore', id=manutenzione.fornitore.id) }}" class="supplier-link">
-                                    {{ manutenzione.fornitore.ragione_sociale }}
-                                </a>
-                            {% else %}
-                                <i class="fas fa-user"></i>
-                                Intervento interno
-                            {% endif %}
-                        </div>
-                    </div>
+                <div class="detail-item">
+                    <span class="detail-label">Marca/Modello:</span>
+                    <span class="detail-value">{{ manutenzione.veicolo.marca }} {{ manutenzione.veicolo.modello }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Anno:</span>
+                    <span class="detail-value year-badge">{{ manutenzione.veicolo.anno_immatricolazione }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Carburante:</span>
+                    <span class="fuel-badge fuel-{{ manutenzione.veicolo.carburante_display|lower|replace(' ', '-')|replace('/', '-') }}">
+                        <i class="fas fa-gas-pump"></i>
+                        {{ manutenzione.veicolo.carburante_display }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Nucleo:</span>
+                    <span class="detail-value nucleo-badge">
+                        <i class="fas fa-building"></i>
+                        {{ manutenzione.nucleo }}
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- SEZIONE 2: DETTAGLI INTERVENTO -->
+        <!-- SEZIONE 2: DATI INTERVENTO -->
         <div class="detail-card" data-section="2">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="fas fa-calendar-alt"></i>
                 </div>
                 <div class="card-title">
-                    <h3>Dettagli Intervento</h3>
-                    <p>Data, tipo e chilometraggio</p>
+                    <h3>Dati Intervento</h3>
+                    <p>Informazioni base dell'intervento</p>
                 </div>
             </div>
             <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Data Intervento</label>
-                        <div class="field-value highlight">
-                            <i class="fas fa-calendar-check"></i>
-                            {{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}
-                        </div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">KM Intervento</label>
-                        <div class="field-value highlight">
-                            <i class="fas fa-tachometer-alt"></i>
-                            {{ "{:,}".format(manutenzione.km_intervento) }} km
-                        </div>
-                    </div>
+                <div class="detail-item">
+                    <span class="detail-label">Tipo Intervento:</span>
+                    <span class="detail-value intervention-type">
+                        <i class="fas fa-wrench"></i>
+                        {{ manutenzione.tipo_intervento }}
+                    </span>
                 </div>
-                
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Tipo Intervento</label>
-                        <div class="field-value">
-                            <i class="fas fa-tools"></i>
-                            {{ manutenzione.tipo_intervento }}
-                        </div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">Stato</label>
-                        <div class="field-value">
-                            <span class="status-badge status-{{ manutenzione.stato.lower().replace(' ', '-') }}">
-                                {% if manutenzione.stato == 'Fatto' %}
-                                    <i class="fas fa-check-circle"></i>
-                                {% else %}
-                                    <i class="fas fa-clock"></i>
-                                {% endif %}
-                                {{ manutenzione.stato }}
-                            </span>
-                        </div>
-                    </div>
+                <div class="detail-item">
+                    <span class="detail-label">Data Intervento:</span>
+                    <span class="detail-value">
+                        <i class="fas fa-calendar"></i>
+                        {{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">KM Intervento:</span>
+                    <span class="detail-value km-value">
+                        <i class="fas fa-road"></i>
+                        {{ "{:,}".format(manutenzione.km_intervento).replace(',', '.') }} km
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Stato:</span>
+                    <span class="status-badge status-{{ manutenzione.stato|lower|replace(' ', '-') }}">
+                        <i class="fas fa-{% if manutenzione.stato == 'Fatto' %}check-circle{% else %}clock{% endif %}"></i>
+                        {{ manutenzione.stato }}
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- 🔄 SEZIONE 3: DOCUMENTI (SENZA COSTI) -->
-        <div class="detail-card" data-section="3">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="fas fa-file-invoice"></i>
-                </div>
-                <div class="card-title">
-                    <h3>Documenti</h3>
-                    <p>Informazioni documentali</p>
-                </div>
-            </div>
-            <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Numero Documento</label>
-                        <div class="field-value">
-                            <i class="fas fa-file-invoice"></i>
-                            {{ manutenzione.numero_documento or 'Non specificato' }}
-                        </div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">Data Documento</label>
-                        <div class="field-value">
-                            <i class="fas fa-receipt"></i>
-                            {{ manutenzione.data_fattura.strftime('%d/%m/%Y') if manutenzione.data_fattura else 'Non specificata' }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SEZIONE 4: GARANZIE & SCADENZE -->
-        <div class="detail-card" data-section="4">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <div class="card-title">
-                    <h3>Garanzie & Scadenze</h3>
-                    <p>Durata garanzia e prossimi interventi</p>
-                </div>
-            </div>
-            <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Garanzia</label>
-                        <div class="field-value">
-                            <i class="fas fa-shield-alt"></i>
-                            {% if manutenzione.garanzia_mesi and manutenzione.garanzia_mesi > 0 %}
-                                {{ manutenzione.garanzia_mesi }} mesi
-                            {% else %}
-                                Nessuna garanzia
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">Prossima Scadenza KM</label>
-                        <div class="field-value">
-                            <i class="fas fa-clock"></i>
-                            {% if manutenzione.prossima_scadenza_km %}
-                                {{ "{:,}".format(manutenzione.prossima_scadenza_km) }} km
-                            {% else %}
-                                Non specificata
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SEZIONE 5: DESCRIZIONE -->
+        <!-- SEZIONE 3: DESCRIZIONE COMPLETA -->
         {% if manutenzione.descrizione %}
-        <div class="detail-card full-width" data-section="5">
+        <div class="detail-card full-width" data-section="3">
             <div class="card-header">
                 <div class="card-icon">
-                    <i class="fas fa-align-left"></i>
+                    <i class="fas fa-file-alt"></i>
                 </div>
                 <div class="card-title">
                     <h3>Descrizione Intervento</h3>
@@ -223,109 +129,328 @@
                 </div>
             </div>
             <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field full-width">
-                        <div class="field-value note-content">{{ manutenzione.descrizione }}</div>
-                    </div>
+                <div class="description-content">
+                    {{ manutenzione.descrizione|replace('\n', '<br>')|safe }}
                 </div>
             </div>
         </div>
         {% endif %}
 
-        <!-- SEZIONE 6: NOTE -->
+        <!-- SEZIONE 4: FORNITORE -->
+        {% if manutenzione.fornitore %}
+        <div class="detail-card" data-section="4">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Fornitore</h3>
+                    <p>Chi ha eseguito l'intervento</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Ragione Sociale:</span>
+                    <span class="detail-value company-name">
+                        <i class="fas fa-building"></i>
+                        {{ manutenzione.fornitore.ragione_sociale }}
+                    </span>
+                </div>
+                {% if manutenzione.fornitore.telefono %}
+                <div class="detail-item">
+                    <span class="detail-label">Telefono:</span>
+                    <span class="detail-value">
+                        <a href="tel:{{ manutenzione.fornitore.telefono }}" class="contact-link">
+                            <i class="fas fa-phone"></i>
+                            {{ manutenzione.fornitore.telefono }}
+                        </a>
+                    </span>
+                </div>
+                {% endif %}
+                {% if manutenzione.fornitore.email %}
+                <div class="detail-item">
+                    <span class="detail-label">Email:</span>
+                    <span class="detail-value">
+                        <a href="mailto:{{ manutenzione.fornitore.email }}" class="contact-link">
+                            <i class="fas fa-envelope"></i>
+                            {{ manutenzione.fornitore.email }}
+                        </a>
+                    </span>
+                </div>
+                {% endif %}
+                {% if manutenzione.fornitore.partita_iva %}
+                <div class="detail-item">
+                    <span class="detail-label">P.IVA:</span>
+                    <span class="detail-value tax-code">
+                        <i class="fas fa-receipt"></i>
+                        {{ manutenzione.fornitore.partita_iva }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="detail-card" data-section="4">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Fornitore</h3>
+                    <p>Chi ha eseguito l'intervento</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Fornitore:</span>
+                    <span class="detail-value text-muted">
+                        <i class="fas fa-times-circle"></i>
+                        Nessun fornitore specificato
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SEZIONE 5: DOCUMENTAZIONE -->
+        <div class="detail-card" data-section="5">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Documentazione</h3>
+                    <p>Fatture e documenti</p>
+                </div>
+            </div>
+
+        <!-- SEZIONE 5B: ALLEGATI -->
+        <div class="detail-card full-width" data-section="5b">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-paperclip"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Allegati</h3>
+                    <p>File associati a questa manutenzione</p>
+                </div>
+            </div>
+            <div class="card-content">
+                {% if manutenzione.allegati %}
+                <ul class="attachment-list">
+                    {% for allegato in manutenzione.allegati %}
+                    <li class="attachment-item">
+                        <a href="{{ url_for('allegati.download_allegato', allegato_id=allegato.id) }}" target="_blank">
+                            <i class="fas fa-file"></i> {{ allegato.filename }}
+                        </a>
+                        <form method="POST" action="{{ url_for('allegati.delete_allegato', allegato_id=allegato.id) }}" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questo allegato?');">
+                            <button type="submit" class="btn-action btn-danger btn-sm" title="Elimina allegato">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">Nessun allegato caricato.</p>
+                {% endif %}
+                <div class="upload-allegato-form" style="margin-top: 0.5rem;">
+                    <form method="POST" action="{{ url_for('allegati.upload_allegato', manutenzione_id=manutenzione.id) }}" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+                        <input type="file" name="file" id="allegatoFile" required class="form-control-file" style="flex:1;"/>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-upload"></i> Carica
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+            <div class="card-content">
+                {% if manutenzione.numero_documento %}
+                <div class="detail-item">
+                    <span class="detail-label">Numero Documento:</span>
+                    <span class="detail-value document-number">
+                        <i class="fas fa-file-invoice"></i>
+                        {{ manutenzione.numero_documento }}
+                    </span>
+                </div>
+                {% endif %}
+                {% if manutenzione.data_fattura %}
+                <div class="detail-item">
+                    <span class="detail-label">Data Fattura:</span>
+                    <span class="detail-value">
+                        <i class="fas fa-calendar-check"></i>
+                        {{ manutenzione.data_fattura.strftime('%d/%m/%Y') }}
+                    </span>
+                </div>
+                {% endif %}
+                {% if not manutenzione.numero_documento and not manutenzione.data_fattura %}
+                <div class="detail-item">
+                    <span class="detail-label">Documentazione:</span>
+                    <span class="detail-value text-muted">
+                        <i class="fas fa-times-circle"></i>
+                        Nessun documento associato
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SEZIONE 6: GARANZIE & SCADENZE -->
+        <div class="detail-card" data-section="6">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Garanzie & Scadenze</h3>
+                    <p>Durata e prossimi interventi</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Garanzia:</span>
+                    {% if manutenzione.garanzia_mesi and manutenzione.garanzia_mesi > 0 %}
+                        <span class="detail-value warranty-value">
+                            <i class="fas fa-shield-alt"></i>
+                            {{ manutenzione.garanzia_mesi }} mes{{ 'e' if manutenzione.garanzia_mesi == 1 else 'i' }}
+                        </span>
+                    {% else %}
+                        <span class="detail-value text-muted">
+                            <i class="fas fa-times-circle"></i>
+                            Nessuna garanzia
+                        </span>
+                    {% endif %}
+                </div>
+                {% if manutenzione.prossima_scadenza_km %}
+                <div class="detail-item">
+                    <span class="detail-label">Prossima Scadenza:</span>
+                    <span class="detail-value next-maintenance">
+                        <i class="fas fa-clock"></i>
+                        {{ "{:,}".format(manutenzione.prossima_scadenza_km).replace(',', '.') }} km
+                    </span>
+                </div>
+                {% endif %}
+                {% if manutenzione.prossima_scadenza_km and manutenzione.veicolo.km_attuali %}
+                <div class="detail-item">
+                    <span class="detail-label">KM Rimanenti:</span>
+                    {% set km_rimanenti = manutenzione.prossima_scadenza_km - manutenzione.veicolo.km_attuali %}
+                    <span class="detail-value remaining-km {% if km_rimanenti <= 1000 %}text-warning{% elif km_rimanenti <= 0 %}text-danger{% endif %}">
+                        <i class="fas fa-road"></i>
+                        {{ "{:,}".format(km_rimanenti).replace(',', '.') }} km
+                        {% if km_rimanenti <= 0 %}
+                            <span class="urgency-badge urgency-critica">SCADUTO</span>
+                        {% elif km_rimanenti <= 1000 %}
+                            <span class="urgency-badge urgency-urgente">PROSSIMO</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SEZIONE 7: NOTE -->
         {% if manutenzione.note %}
-        <div class="detail-card full-width" data-section="6">
+        <div class="detail-card full-width" data-section="7">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="fas fa-sticky-note"></i>
                 </div>
                 <div class="card-title">
-                    <h3>Note Aggiuntive</h3>
-                    <p>Informazioni supplementari</p>
+                    <h3>Note</h3>
+                    <p>Annotazioni aggiuntive</p>
                 </div>
             </div>
             <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field full-width">
-                        <div class="field-value note-content">{{ manutenzione.note }}</div>
-                    </div>
+                <div class="notes-content">
+                    {{ manutenzione.note|replace('\n', '<br>')|safe }}
                 </div>
             </div>
         </div>
         {% endif %}
 
-        <!-- SEZIONE 7: INFORMAZIONI SISTEMA -->
-        <div class="detail-card full-width" data-section="7">
+        <!-- SEZIONE 8: ALTRE MANUTENZIONI VEICOLO -->
+        {% set altre_manutenzioni = manutenzione.veicolo.manutenzioni|rejectattr('id', 'eq', manutenzione.id)|list %}
+        {% if altre_manutenzioni %}
+        <div class="detail-card full-width" data-section="8">
             <div class="card-header">
                 <div class="card-icon">
-                    <i class="fas fa-info-circle"></i>
+                    <i class="fas fa-history"></i>
                 </div>
                 <div class="card-title">
-                    <h3>Informazioni Sistema</h3>
-                    <p>Metadati e cronologia</p>
+                    <h3>Altre Manutenzioni del Veicolo</h3>
+                    <p>Cronologia interventi su {{ manutenzione.veicolo.targa }}</p>
                 </div>
             </div>
             <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Data Creazione</label>
-                        <div class="field-value">
-                            <i class="fas fa-calendar-plus"></i>
-                            {{ manutenzione.data_creazione.strftime('%d/%m/%Y %H:%M') if manutenzione.data_creazione else 'N/A' }}
+                <div class="related-list">
+                    {% for altra_manutenzione in altre_manutenzioni[:8] %}
+                    <div class="related-item">
+                        <div class="related-info">
+                            <div class="related-title">
+                                <i class="fas fa-wrench"></i>
+                                {{ altra_manutenzione.tipo_intervento }}
+                            </div>
+                            <div class="related-details">
+                                <span class="related-date">{{ altra_manutenzione.data_intervento.strftime('%d/%m/%Y') }}</span>
+                                <span class="related-km">{{ "{:,}".format(altra_manutenzione.km_intervento).replace(',', '.') }} km</span>
+                                <span class="status-badge status-{{ altra_manutenzione.stato|lower|replace(' ', '-') }}">
+                                    {{ altra_manutenzione.stato }}
+                                </span>
+                                {% if altra_manutenzione.fornitore %}
+                                    <span class="related-supplier">{{ altra_manutenzione.fornitore.ragione_sociale[:20] }}{% if altra_manutenzione.fornitore.ragione_sociale|length > 20 %}...{% endif %}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="related-actions">
+                            <a href="{{ url_for('manutenzioni.dettaglio_manutenzione', id=altra_manutenzione.id) }}" class="btn-related">
+                                <i class="fas fa-eye"></i>
+                            </a>
                         </div>
                     </div>
-                    <div class="detail-field">
-                        <label class="field-label">ID Record</label>
-                        <div class="field-value">
-                            <i class="fas fa-hashtag"></i>
-                            {{ manutenzione.id }}
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
-                
-                <div class="quick-links">
-                    <a href="{{ url_for('veicoli.dettaglio_veicolo', id=manutenzione.veicolo.id) }}" class="quick-link-btn">
-                        <i class="fas fa-car"></i>
-                        Vedi Veicolo
-                    </a>
-                    
-                    {% if manutenzione.fornitore %}
-                    <a href="{{ url_for('fornitori.dettaglio_fornitore', id=manutenzione.fornitore.id) }}" class="quick-link-btn">
-                        <i class="fas fa-building"></i>
-                        Vedi Fornitore
-                    </a>
-                    {% endif %}
-                    
-                    <a href="{{ url_for('manutenzioni.index_manutenzioni', veicolo=manutenzione.veicolo.id) }}" class="quick-link-btn">
+                {% if altre_manutenzioni|length > 8 %}
+                <div class="view-all-link">
+                    <span class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Mostrate le prime 8 manutenzioni di {{ altre_manutenzioni|length }} totali
+                    </span>
+                </div>
+                {% endif %}
+                <div class="view-all-link">
+                    <a href="{{ url_for('manutenzioni.index_manutenzioni') }}?veicolo={{ manutenzione.veicolo.id }}" class="btn-view-all">
                         <i class="fas fa-list"></i>
-                        Altre Manutenzioni Veicolo
+                        Vedi tutte le manutenzioni del veicolo
                     </a>
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 
 <style>
-/* === DETTAGLIO MANUTENZIONE MATRIX === */
+/* === DETTAGLIO COMPLETO MANUTENZIONE === */
 
-.detail-container {
+.modern-detail-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 20px;
-    background: transparent;
+    padding: 30px;
+    background: linear-gradient(135deg, rgba(0, 20, 0, 0.7), rgba(0, 40, 0, 0.3));
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-/* Header del Dettaglio */
+/* Header Dettaglio */
 .detail-header-modern {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 35px;
     padding: 25px;
     background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.05));
     border: 1px solid rgba(0, 255, 65, 0.3);
-    border-radius: 12px;
+    border-radius: 15px;
     backdrop-filter: blur(10px);
 }
 
@@ -338,102 +463,130 @@
 .detail-icon-wrapper {
     width: 60px;
     height: 60px;
-    background: rgba(0, 255, 65, 0.2);
-    border-radius: 50%;
+    background: linear-gradient(135deg, #00ff41, #7fff7f);
+    border-radius: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 255, 65, 0.3);
 }
 
 .detail-icon-wrapper i {
     font-size: 24px;
-    color: #00ff41;
+    color: #000;
 }
 
-.detail-title-main {
-    font-size: 32px;
-    color: #00ff41;
+.detail-title-info h1 {
     margin: 0;
-    font-family: 'Orbitron', monospace;
+    font-size: 24px;
+    color: #00ff41;
+    font-weight: 700;
     text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
 }
 
-.detail-subtitle {
-    color: #a0a0a0;
-    margin: 5px 0;
-    font-size: 16px;
-}
-
-.detail-status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin-top: 8px;
-}
-
-.detail-status-badge.status-fatto {
+.vehicle-plate-header {
+    font-family: 'Orbitron', monospace;
     background: rgba(0, 255, 65, 0.2);
-    color: #00ff41;
-    border: 1px solid rgba(0, 255, 65, 0.3);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #00ff41;
+    margin-right: 8px;
 }
 
-.detail-status-badge.status-da-fare {
-    background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-    border: 1px solid rgba(255, 193, 7, 0.3);
+.detail-subtitle {
+    margin: 5px 0 0 0;
+    color: #ccc;
+    font-size: 14px;
 }
 
-/* Grid delle sezioni */
+.detail-actions-header {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-header {
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00ff41, #7fff7f);
+    color: #000;
+    border: 1px solid #00ff41;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #7fff7f, #00ff41);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 255, 65, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.4);
+}
+
+.btn-secondary:hover {
+    background: rgba(108, 117, 125, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
+}
+
+/* Grid delle Sezioni */
 .detail-sections-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 25px;
-    margin-bottom: 30px;
 }
 
 .detail-card.full-width {
     grid-column: span 2;
 }
 
-/* Card delle sezioni */
+/* Card Dettaglio */
 .detail-card {
-    background: rgba(20, 20, 20, 0.9);
-    border: 1px solid rgba(0, 255, 65, 0.3);
-    border-radius: 12px;
+    background: rgba(0, 20, 0, 0.4);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 15px;
     overflow: hidden;
-    backdrop-filter: blur(10px);
     transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
 }
 
 .detail-card:hover {
+    border-color: rgba(0, 255, 65, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 255, 65, 0.1);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 255, 65, 0.15);
-    border-color: rgba(0, 255, 65, 0.5);
 }
 
 .card-header {
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.08), rgba(0, 255, 65, 0.03));
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
     display: flex;
     align-items: center;
     gap: 15px;
-    padding: 20px;
-    background: rgba(0, 255, 65, 0.1);
-    border-bottom: 1px solid rgba(0, 255, 65, 0.2);
 }
 
 .card-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(0, 255, 65, 0.2);
-    border-radius: 8px;
+    width: 45px;
+    height: 45px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .card-icon i {
@@ -442,214 +595,367 @@
 }
 
 .card-title h3 {
-    color: #00ff41;
     margin: 0;
+    color: #00ff41;
     font-size: 18px;
-    font-family: 'Orbitron', monospace;
+    font-weight: 600;
 }
 
 .card-title p {
-    color: #a0a0a0;
-    margin: 2px 0 0 0;
-    font-size: 12px;
+    margin: 3px 0 0 0;
+    color: #999;
+    font-size: 13px;
 }
 
 .card-content {
     padding: 25px;
 }
 
-/* Layout campi */
-.detail-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.detail-row:last-child {
-    margin-bottom: 0;
-}
-
-.detail-field {
+/* Items Dettaglio */
+.detail-item {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #999;
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 140px;
+}
+
+.detail-value {
+    color: #fff;
+    font-weight: 600;
+    text-align: right;
+    display: flex;
+    align-items: center;
     gap: 8px;
 }
 
-.detail-field.full-width {
-    grid-column: span 2;
-}
-
-/* Labels e valori */
-.field-label {
+/* Badges Specifici */
+.vehicle-plate {
     color: #00ff41;
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    background: rgba(0, 255, 65, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
 }
 
-.field-value {
-    color: #ffffff;
-    font-size: 14px;
-    padding: 8px 12px;
+.year-badge {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.km-value {
+    color: #00ff41;
+    font-weight: 700;
+}
+
+.nucleo-badge {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.intervention-type {
+    color: #00ff41;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.company-name {
+    color: #00ff41;
+    font-weight: 700;
+}
+
+.tax-code {
+    color: #00ff41;
+    font-family: 'Orbitron', monospace;
+    background: rgba(0, 255, 65, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.document-number {
+    color: #ffc107;
+    font-family: 'Courier New', monospace;
+    background: rgba(255, 193, 7, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    font-weight: 600;
+}
+
+.warranty-value {
+    color: #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.next-maintenance {
+    color: #17a2b8;
+    background: rgba(23, 162, 184, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(23, 162, 184, 0.3);
+}
+
+.remaining-km {
+    font-weight: 700;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Carburante Badges */
+.fuel-badge {
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.fuel-benzina {
+    background: rgba(255, 99, 132, 0.2);
+    color: #ff6384;
+    border: 1px solid rgba(255, 99, 132, 0.4);
+}
+
+.fuel-diesel {
+    background: rgba(54, 162, 235, 0.2);
+    color: #36a2eb;
+    border: 1px solid rgba(54, 162, 235, 0.4);
+}
+
+.fuel-metano {
+    background: rgba(75, 192, 192, 0.2);
+    color: #4bc0c0;
+    border: 1px solid rgba(75, 192, 192, 0.4);
+}
+
+.fuel-elettrico {
+    background: rgba(255, 206, 86, 0.2);
+    color: #ffce56;
+    border: 1px solid rgba(255, 206, 86, 0.4);
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-fatto {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.4);
+}
+
+.status-da-fare {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+.urgency-badge {
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 8px;
+}
+
+.urgency-critica {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+.urgency-urgente {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+/* Contact Links */
+.contact-link {
+    color: #00ff41;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.contact-link:hover {
+    color: #7fff7f;
+    transform: translateX(2px);
+}
+
+/* Description Content */
+.description-content {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(0, 255, 65, 0.2);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.field-value.primary {
-    background: rgba(0, 255, 65, 0.1);
-    border-color: rgba(0, 255, 65, 0.4);
-    color: #00ff41;
-    font-weight: 600;
-    font-family: 'Orbitron', monospace;
-}
-
-.field-value.highlight {
-    background: rgba(0, 255, 65, 0.05);
-    border-color: rgba(0, 255, 65, 0.3);
-}
-
-.field-value.note-content {
-    white-space: pre-wrap;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.5);
     border-radius: 8px;
-    line-height: 1.5;
-    align-items: flex-start;
+    padding: 15px;
+    color: #fff;
+    line-height: 1.6;
+    font-size: 14px;
 }
 
-/* Links */
-.vehicle-link, .supplier-link {
-    color: inherit;
-    text-decoration: none;
-    transition: color 0.3s ease;
+/* Note Content */
+.notes-content {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    color: #fff;
+    line-height: 1.6;
+    font-size: 14px;
 }
 
-.vehicle-link:hover, .supplier-link:hover {
-    color: #00ff41;
-    text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
-}
-
-/* Badge speciali */
-.nucleo-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 8px;
-    border-radius: 15px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.nucleo-badge.nucleo-via-capitel {
-    background: rgba(0, 123, 255, 0.2);
-    color: #007bff;
-    border: 1px solid rgba(0, 123, 255, 0.3);
-}
-
-.nucleo-badge.nucleo-campania {
-    background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-    border: 1px solid rgba(255, 193, 7, 0.3);
-}
-
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 8px;
-    border-radius: 15px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.status-badge.status-fatto {
-    background: rgba(0, 255, 65, 0.2);
-    color: #00ff41;
-    border: 1px solid rgba(0, 255, 65, 0.3);
-}
-
-.status-badge.status-da-fare {
-    background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-    border: 1px solid rgba(255, 193, 7, 0.3);
-}
-
-/* Quick links */
-.quick-links {
+/* Related Lists */
+.related-list {
     display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    margin-top: 15px;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.quick-link-btn {
+.related-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 8px;
+    padding: 15px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
-    padding: 10px 15px;
-    background: rgba(0, 255, 65, 0.1);
-    border: 1px solid rgba(0, 255, 65, 0.3);
-    border-radius: 6px;
-    color: #00ff41;
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
     transition: all 0.3s ease;
 }
 
-.quick-link-btn:hover {
+.related-item:hover {
+    border-color: rgba(0, 255, 65, 0.4);
+    background: rgba(0, 255, 65, 0.05);
+}
+
+.related-info {
+    flex: 1;
+}
+
+.related-title {
+    color: #00ff41;
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.related-details {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-size: 12px;
+    flex-wrap: wrap;
+}
+
+.related-date {
+    color: #999;
+}
+
+.related-km {
+    color: #7fff7f;
+    font-weight: 600;
+}
+
+.related-supplier {
+    color: #17a2b8;
+    font-size: 11px;
+    background: rgba(23, 162, 184, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.related-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-related {
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    color: #00ff41;
+    padding: 6px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-related:hover {
     background: rgba(0, 255, 65, 0.2);
     transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(0, 255, 65, 0.2);
 }
 
-/* Header buttons */
-.detail-actions-header {
-    display: flex;
-    gap: 15px;
+.view-all-link {
+    text-align: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0, 255, 65, 0.1);
 }
 
-.btn-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
+.btn-view-all {
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    color: #00ff41;
+    padding: 8px 16px;
+    border-radius: 6px;
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 12px;
     transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, #00ff41, #00cc33);
-    color: #000000;
+.btn-view-all:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: translateY(-1px);
 }
 
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(0, 255, 65, 0.4);
-}
-
-.btn-secondary {
-    background: rgba(108, 117, 125, 0.8);
-    color: #ffffff;
-    border: 1px solid rgba(108, 117, 125, 0.5);
-}
-
-.btn-secondary:hover {
-    background: rgba(108, 117, 125, 1);
-    transform: translateY(-2px);
+/* Text Muted */
+.text-muted {
+    color: #999;
+    font-style: italic;
 }
 
 /* Responsive */
@@ -664,23 +970,39 @@
 }
 
 @media (max-width: 768px) {
+    .modern-detail-container {
+        padding: 15px;
+    }
+    
     .detail-header-modern {
         flex-direction: column;
         gap: 15px;
         text-align: center;
     }
     
-    .detail-row {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .detail-field.full-width {
-        grid-column: span 1;
-    }
-    
-    .quick-links {
+    .detail-actions-header {
         justify-content: center;
+    }
+    
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .detail-label {
+        min-width: auto;
+        font-size: 12px;
+    }
+    
+    .detail-value {
+        text-align: left;
+    }
+    
+    .related-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
     }
 }
 </style>

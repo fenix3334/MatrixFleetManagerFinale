@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Scheda Kilometrica - Trimestre {{ trimestre }} / {{ anno }}</h2>
+
+<!-- Pulsante larghezza colonne -->
+<div class="mb-2">
+    <button type="button" id="toggleColumnsBtnTrimestreSheet" class="btn btn-outline-light btn-sm">
+        <i class="fas fa-arrows-left-right"></i> Larghezza colonne
+    </button>
+</div>
+<!-- Navigational buttons -->
+<div class="mb-3">
+    <a class="btn btn-secondary" href="{{ url_for('scheda_km.select_scheda_km') }}">Torna alla selezione</a>
+    {# Pulsante per esportare il trimestre in Excel #}
+    <a class="btn btn-outline-light" href="{{ url_for('scheda_km.export_excel_trimestre', anno=anno, q=trimestre) }}">Esporta Excel</a>
+    {# Pulsante per stampare la pagina: utilizza la funzione di stampa del browser #}
+    <button type="button" class="btn btn-outline-light" onclick="window.print()">Stampa</button>
+</div>
+
+<table class="km-table">
+    <thead>
+        <tr>
+            <th>Veicolo</th>
+            <th>Targa</th>
+            <th>Km Iniziali</th>
+            <th>Km Finali</th>
+            <th>Km Percorsi</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in summary %}
+        <tr>
+            <td>{{ r.veicolo.marca }} {{ r.veicolo.modello }}</td>
+            <td>{{ r.veicolo.targa }}</td>
+            <td>{{ r.km_iniziali if r.km_iniziali is not none else '' }}</td>
+            <td>{{ r.km_finali if r.km_finali is not none else '' }}</td>
+            <td>{{ r.km_percorsi if r.km_percorsi is not none else '' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('toggleColumnsBtnTrimestreSheet');
+    const table = document.querySelector('.km-table');
+    // Ripristina stato salvato
+    const stored = localStorage.getItem('kmTrimestreSheetExpanded');
+    if (stored === 'true') {
+        table.classList.add('expanded-columns');
+    }
+    btn.addEventListener('click', function() {
+        table.classList.toggle('expanded-columns');
+        const expanded = table.classList.contains('expanded-columns');
+        localStorage.setItem('kmTrimestreSheetExpanded', expanded);
+    });
+});
+</script>
+<style>
+.km-table th, .km-table td { white-space: nowrap; }
+.km-table.expanded-columns th, .km-table.expanded-columns td { white-space: normal; word-break: break-word; }
+</style>
+{% endblock %}

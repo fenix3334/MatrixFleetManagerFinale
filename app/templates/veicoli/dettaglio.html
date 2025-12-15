@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Dettaglio {{ veicolo.targa }} - Matrix Fleet Manager{% endblock %}
+{% block title %}{{ veicolo.targa }} - Dettaglio Veicolo{% endblock %}
 
 {% block content %}
-<div class="detail-container">
+<div class="modern-detail-container">
     <!-- Header del Dettaglio -->
     <div class="detail-header-modern">
         <div class="detail-title-section">
@@ -11,27 +11,30 @@
                 <i class="fas fa-car"></i>
             </div>
             <div class="detail-title-info">
-                <h1 class="detail-title-main">{{ veicolo.targa }}</h1>
-                <p class="detail-subtitle">{{ veicolo.marca }} {{ veicolo.modello }} - {{ veicolo.anno_immatricolazione }}</p>
-                <div class="detail-status-badge status-{{ veicolo.stato.lower().replace(' ', '-') }}">
-                    <i class="fas fa-circle"></i>
-                    {{ veicolo.stato }}
-                </div>
+                <h1 class="detail-title-main">
+                    <span class="vehicle-plate-header">{{ veicolo.targa }}</span>
+                    {{ veicolo.marca }} {{ veicolo.modello }}
+                </h1>
+                <p class="detail-subtitle">Scheda completa del veicolo - Tutti i dati in sola lettura</p>
             </div>
         </div>
         <div class="detail-actions-header">
+            <a href="{{ url_for('veicoli.modifica_veicolo', veicolo_id=veicolo.id) }}" class="btn-header btn-primary">
+                <i class="fas fa-edit"></i>
+                <span>Modifica</span>
+            </a>
             <a href="{{ url_for('veicoli.index_veicoli') }}" class="btn-header btn-secondary">
                 <i class="fas fa-arrow-left"></i>
                 <span>Lista Veicoli</span>
             </a>
-            <a href="{{ url_for('veicoli.modifica_veicolo', id=veicolo.id) }}" class="btn-header btn-primary">
-                <i class="fas fa-edit"></i>
-                <span>Modifica</span>
+            <a href="{{ url_for('report.report_veicolo', veicolo_id=veicolo.id) }}" class="btn-header btn-info" title="Genera report">
+                <i class="fas fa-file-alt"></i>
+                <span>Report</span>
             </a>
         </div>
     </div>
 
-    <!-- Griglia Dettagli -->
+    <!-- Grid delle Sezioni Informative -->
     <div class="detail-sections-grid">
         
         <!-- SEZIONE 1: DATI IDENTIFICATIVI -->
@@ -46,302 +49,427 @@
                 </div>
             </div>
             <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Targa</label>
-                        <div class="field-value primary">{{ veicolo.targa }}</div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">Nucleo</label>
-                        <div class="field-value">
-                            <span class="nucleo-badge nucleo-{{ veicolo.nucleo.lower().replace(' ', '-') }}">
-                                <i class="fas fa-map-marker-alt"></i>
-                                {{ veicolo.nucleo }}
-                            </span>
-                        </div>
-                    </div>
+                <div class="detail-item">
+                    <span class="detail-label">Targa:</span>
+                    <span class="detail-value vehicle-plate">{{ veicolo.targa }}</span>
                 </div>
-                
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Marca</label>
-                        <div class="field-value">{{ veicolo.marca }}</div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">Modello</label>
-                        <div class="field-value">{{ veicolo.modello }}</div>
-                    </div>
+                <div class="detail-item">
+                    <span class="detail-label">Marca:</span>
+                    <span class="detail-value">{{ veicolo.marca }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Modello:</span>
+                    <span class="detail-value">{{ veicolo.modello }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Stato:</span>
+                    <span class="status-badge status-{{ veicolo.stato.lower().replace(' ', '-') }}">
+                        <i class="fas fa-circle"></i>
+                        {{ veicolo.stato }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Nucleo:</span>
+                    <span class="detail-value nucleo-badge">
+                        <i class="fas fa-building"></i>
+                        {{ veicolo.nucleo }}
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- 🆕 SEZIONE 2: UNITÀ OPERATIVA -->
+        <!-- SEZIONE 2: IMMATRICOLAZIONE -->
         <div class="detail-card" data-section="2">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="fas fa-building"></i>
-                </div>
-                <div class="card-title">
-                    <h3>Unità Operativa</h3>
-                    <p>Assegnazione del veicolo</p>
-                </div>
-            </div>
-            <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field full-width">
-                        <label class="field-label">Assegnato a U.O.</label>
-                        <div class="field-value highlight">
-                            <i class="fas fa-sitemap"></i>
-                            {{ veicolo.unita_operativa_display }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SEZIONE 3: DATI IMMATRICOLAZIONE -->
-        <div class="detail-card" data-section="3">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="fas fa-calendar-alt"></i>
                 </div>
                 <div class="card-title">
-                    <h3>Dati Immatricolazione</h3>
-                    <p>Anno, data e chilometraggio</p>
+                    <h3>Immatricolazione</h3>
+                    <p>Date e chilometraggio</p>
                 </div>
             </div>
             <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Anno Immatricolazione</label>
-                        <div class="field-value">{{ veicolo.anno_immatricolazione }}</div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">Data Immatricolazione</label>
-                        <div class="field-value">{{ veicolo.data_immatricolazione.strftime('%d/%m/%Y') if veicolo.data_immatricolazione else 'N/A' }}</div>
-                    </div>
+                <div class="detail-item">
+                    <span class="detail-label">Anno:</span>
+                    <span class="detail-value year-badge">{{ veicolo.anno_immatricolazione }}</span>
                 </div>
-                
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">KM Attuali</label>
-                        <div class="field-value highlight">
-                            <i class="fas fa-tachometer-alt"></i>
-                            {{ "{:,}".format(veicolo.km_attuali) }} km
-                        </div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">Stato</label>
-                        <div class="field-value">
-                            <span class="status-badge status-{{ veicolo.stato.lower().replace(' ', '-') }}">
-                                {{ veicolo.stato }}
-                            </span>
-                        </div>
-                    </div>
+                <div class="detail-item">
+                    <span class="detail-label">Data Immatric.:</span>
+                    <span class="detail-value">
+                        <i class="fas fa-calendar"></i>
+                        {{ veicolo.data_immatricolazione.strftime('%d/%m/%Y') }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">KM Attuali:</span>
+                    <span class="detail-value km-value">
+                        <i class="fas fa-road"></i>
+                        {{ veicolo.km_attuali|format_number }} km
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- SEZIONE 4: CARATTERISTICHE TECNICHE -->
+        <!-- SEZIONE 3: MOTORIZZAZIONE -->
+        <div class="detail-card" data-section="3">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Motorizzazione</h3>
+                    <p>Caratteristiche tecniche</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Carburante:</span>
+                    <span class="fuel-badge fuel-{{ veicolo.carburante_display|lower|replace(' ', '-')|replace('/', '-') }}">
+                        <i class="fas fa-gas-pump"></i>
+                        {{ veicolo.carburante_display }}
+                    </span>
+                </div>
+                {% if veicolo.cilindrata %}
+                <div class="detail-item">
+                    <span class="detail-label">Cilindrata:</span>
+                    <span class="detail-value">
+                        <i class="fas fa-tachometer-alt"></i>
+                        {{ veicolo.cilindrata }} cc
+                    </span>
+                </div>
+                {% endif %}
+                {% if veicolo.colore %}
+                <div class="detail-item">
+                    <span class="detail-label">Colore:</span>
+                    <span class="detail-value">
+                        <i class="fas fa-palette"></i>
+                        {{ veicolo.colore }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SEZIONE 4: UNITÀ OPERATIVA -->
         <div class="detail-card" data-section="4">
             <div class="card-header">
                 <div class="card-icon">
-                    <i class="fas fa-cogs"></i>
+                    <i class="fas fa-map-marker-alt"></i>
                 </div>
                 <div class="card-title">
-                    <h3>Caratteristiche Tecniche</h3>
-                    <p>Motore, carburante e specifiche</p>
+                    <h3>Unità Operativa</h3>
+                    <p>Assegnazione e localizzazione</p>
                 </div>
             </div>
             <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Carburante</label>
-                        <div class="field-value">
-                            <i class="fas fa-gas-pump"></i>
-                            {{ veicolo.carburante_display }}
-                        </div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">Cilindrata</label>
-                        <div class="field-value">{{ veicolo.cilindrata }} cc</div>
-                    </div>
+                <div class="detail-item">
+                    <span class="detail-label">Assegnato a:</span>
+                    <span class="detail-value unit-assignment">
+                        <i class="fas fa-location-arrow"></i>
+                        {{ veicolo.unita_operativa_display }}
+                    </span>
                 </div>
-                
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Colore</label>
-                        <div class="field-value">{{ veicolo.colore or 'N/A' }}</div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">Data Creazione</label>
-                        <div class="field-value">{{ veicolo.data_creazione.strftime('%d/%m/%Y %H:%M') if veicolo.data_creazione else 'N/A' }}</div>
-                    </div>
+                {% if veicolo.unita_operativa == 'Altro' and veicolo.unita_operativa_personalizzata %}
+                <div class="detail-item">
+                    <span class="detail-label">Dettaglio Custom:</span>
+                    <span class="detail-value custom-unit">
+                        <i class="fas fa-edit"></i>
+                        {{ veicolo.unita_operativa_personalizzata }}
+                    </span>
                 </div>
+                {% endif %}
             </div>
         </div>
 
-        <!-- SEZIONE 5: CARTA CARBURANTE & NOLEGGIO -->
+        <!-- SEZIONE 5: CARTA CARBURANTE -->
+        {% if veicolo.carta_carburante or veicolo.pin_carburante %}
         <div class="detail-card" data-section="5">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="fas fa-credit-card"></i>
                 </div>
                 <div class="card-title">
-                    <h3>Carta Carburante & Noleggio</h3>
-                    <p>Gestione rifornimenti e noleggio</p>
+                    <h3>Carta Carburante</h3>
+                    <p>Informazioni carta rifornimento</p>
                 </div>
             </div>
             <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field">
-                        <label class="field-label">Carta Carburante</label>
-                        <div class="field-value">{{ veicolo.carta_carburante or 'Non specificata' }}</div>
-                    </div>
-                    <div class="detail-field">
-                        <label class="field-label">PIN Carta</label>
-                        <div class="field-value password-field">
-                            {% if veicolo.pin_carburante %}
-                                <span id="pin-hidden">••••••••</span>
-                                <span id="pin-visible" style="display: none;">{{ veicolo.pin_carburante }}</span>
-                                <button type="button" class="btn-toggle-pin" onclick="togglePin()">
-                                    <i class="fas fa-eye" id="pin-icon"></i>
-                                </button>
-                            {% else %}
-                                Non specificato
-                            {% endif %}
-                        </div>
-                    </div>
+                {% if veicolo.carta_carburante %}
+                <div class="detail-item">
+                    <span class="detail-label">Numero Carta:</span>
+                    <span class="detail-value card-number">
+                        <i class="fas fa-credit-card"></i>
+                        {{ veicolo.carta_carburante }}
+                    </span>
                 </div>
-                
-                <div class="detail-row">
-                    <div class="detail-field full-width">
-                        <label class="field-label">Società Noleggio</label>
-                        <div class="field-value">
-                            {% if veicolo.societa_noleggio %}
-                                <i class="fas fa-handshake"></i>
-                                {{ veicolo.societa_noleggio.ragione_sociale }}
-                            {% else %}
-                                <i class="fas fa-building"></i>
-                                Proprietà aziendale
-                            {% endif %}
-                        </div>
-                    </div>
+                {% endif %}
+                {% if veicolo.pin_carburante %}
+                <div class="detail-item">
+                    <span class="detail-label">PIN:</span>
+                    <span class="detail-value pin-value" id="pin-display">
+                        <span class="pin-hidden">••••</span>
+                        <span class="pin-visible" style="display: none;">{{ veicolo.pin_carburante }}</span>
+                        <button type="button" class="pin-toggle" onclick="togglePinVisibility()">
+                            <i class="fas fa-eye" id="pin-icon"></i>
+                        </button>
+                    </span>
                 </div>
+                {% endif %}
             </div>
         </div>
-
-        <!-- SEZIONE 6: NOTE -->
-        {% if veicolo.note %}
-        <div class="detail-card full-width" data-section="6">
+        {% else %}
+        <div class="detail-card" data-section="5">
             <div class="card-header">
                 <div class="card-icon">
-                    <i class="fas fa-sticky-note"></i>
+                    <i class="fas fa-credit-card"></i>
                 </div>
                 <div class="card-title">
-                    <h3>Note Aggiuntive</h3>
-                    <p>Informazioni supplementari</p>
+                    <h3>Carta Carburante</h3>
+                    <p>Informazioni carta rifornimento</p>
                 </div>
             </div>
             <div class="card-content">
-                <div class="detail-row">
-                    <div class="detail-field full-width">
-                        <div class="field-value note-content">{{ veicolo.note }}</div>
-                    </div>
+                <div class="detail-item">
+                    <span class="detail-label">Stato:</span>
+                    <span class="detail-value text-muted">
+                        <i class="fas fa-times-circle"></i>
+                        Nessuna carta associata
+                    </span>
                 </div>
             </div>
         </div>
         {% endif %}
 
-        <!-- SEZIONE 7: STATISTICHE -->
-        <div class="detail-card full-width" data-section="7">
+        <!-- SEZIONE 6: SOCIETÀ NOLEGGIO -->
+        {% if veicolo.societa_noleggio %}
+        <div class="detail-card" data-section="6">
             <div class="card-header">
                 <div class="card-icon">
-                    <i class="fas fa-chart-bar"></i>
+                    <i class="fas fa-handshake"></i>
                 </div>
                 <div class="card-title">
-                    <h3>Statistiche & Cronologia</h3>
-                    <p>Manutenzioni e scadenze associate</p>
+                    <h3>Società di Noleggio</h3>
+                    <p>Informazioni proprietario</p>
                 </div>
             </div>
             <div class="card-content">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-wrench"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number">{{ veicolo.manutenzioni|length }}</div>
-                            <div class="stat-label">Manutenzioni</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number">{{ veicolo.scadenze|length }}</div>
-                            <div class="stat-label">Scadenze</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-calendar"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number">
-                                {% set anni = ((2024 - veicolo.anno_immatricolazione) if veicolo.anno_immatricolazione else 0) %}
-                                {{ anni }}
-                            </div>
-                            <div class="stat-label">Anni di servizio</div>
-                        </div>
-                    </div>
+                <div class="detail-item">
+                    <span class="detail-label">Società:</span>
+                    <span class="detail-value company-name">
+                        <i class="fas fa-building"></i>
+                        {{ veicolo.societa_noleggio.ragione_sociale }}
+                    </span>
                 </div>
-                
-                {% if veicolo.manutenzioni or veicolo.scadenze %}
-                <div class="quick-links">
-                    {% if veicolo.manutenzioni %}
-                    <a href="{{ url_for('manutenzioni.index_manutenzioni', veicolo=veicolo.id) }}" class="quick-link-btn">
-                        <i class="fas fa-wrench"></i>
-                        Vedi Manutenzioni
-                    </a>
-                    {% endif %}
-                    
-                    {% if veicolo.scadenze %}
-                    <a href="{{ url_for('scadenze.index_scadenze', veicolo=veicolo.id) }}" class="quick-link-btn">
-                        <i class="fas fa-clock"></i>
-                        Vedi Scadenze
-                    </a>
-                    {% endif %}
+                {% if veicolo.societa_noleggio.telefono %}
+                <div class="detail-item">
+                    <span class="detail-label">Telefono:</span>
+                    <span class="detail-value">
+                        <a href="tel:{{ veicolo.societa_noleggio.telefono }}" class="contact-link">
+                            <i class="fas fa-phone"></i>
+                            {{ veicolo.societa_noleggio.telefono }}
+                        </a>
+                    </span>
+                </div>
+                {% endif %}
+                {% if veicolo.societa_noleggio.email %}
+                <div class="detail-item">
+                    <span class="detail-label">Email:</span>
+                    <span class="detail-value">
+                        <a href="mailto:{{ veicolo.societa_noleggio.email }}" class="contact-link">
+                            <i class="fas fa-envelope"></i>
+                            {{ veicolo.societa_noleggio.email }}
+                        </a>
+                    </span>
                 </div>
                 {% endif %}
             </div>
         </div>
+        {% else %}
+        <div class="detail-card" data-section="6">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Proprietà</h3>
+                    <p>Veicolo aziendale</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="detail-item">
+                    <span class="detail-label">Tipo:</span>
+                    <span class="detail-value ownership-badge">
+                        <i class="fas fa-home"></i>
+                        Proprietà Aziendale
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SEZIONE 7: NOTE -->
+        {% if veicolo.note %}
+        <div class="detail-card full-width" data-section="7">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-sticky-note"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Note</h3>
+                    <p>Annotazioni aggiuntive</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="notes-content">
+                    {{ veicolo.note|replace('\n', '<br>')|safe }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SEZIONE 8: MANUTENZIONI RECENTI -->
+        {% if manutenzioni_recenti %}
+        <div class="detail-card full-width" data-section="8">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Manutenzioni Recenti</h3>
+                    <p>Ultimi 5 interventi di manutenzione</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="related-list">
+                    {% for manutenzione in manutenzioni_recenti %}
+                    <div class="related-item">
+                        <div class="related-info">
+                            <div class="related-title">
+                                <i class="fas fa-wrench"></i>
+                                {{ manutenzione.tipo_intervento }}
+                            </div>
+                            <div class="related-details">
+                                <span class="related-date">{{ manutenzione.data_intervento.strftime('%d/%m/%Y') }}</span>
+                                <span class="related-km">{{ manutenzione.km_intervento|format_number }} km</span>
+                                <span class="status-badge status-{{ manutenzione.stato|lower|replace(' ', '-') }}">
+                                    {{ manutenzione.stato }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="related-actions">
+                            <a href="{{ url_for('manutenzioni.dettaglio_manutenzione', id=manutenzione.id) }}" class="btn-related">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="view-all-link">
+                    <a href="{{ url_for('manutenzioni.index_manutenzioni') }}?veicolo={{ veicolo.id }}" class="btn-view-all">
+                        <i class="fas fa-list"></i>
+                        Vedi tutte le manutenzioni
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SEZIONE 9: SCADENZE PROSSIME -->
+        {% if scadenze_prossime %}
+        <div class="detail-card full-width" data-section="9">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="card-title">
+                    <h3>Scadenze Prossime</h3>
+                    <p>Prossime 5 scadenze in ordine di urgenza</p>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="related-list">
+                    {% for scadenza in scadenze_prossime %}
+                    <div class="related-item urgency-{{ scadenza.stato_urgenza }}">
+                        <div class="related-info">
+                            <div class="related-title">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ scadenza.tipo_scadenza }}
+                            </div>
+                            <div class="related-details">
+                                <span class="related-date">{{ scadenza.data_scadenza.strftime('%d/%m/%Y') }}</span>
+                                {% if scadenza.giorni_scadenza is not none %}
+                                    {% if scadenza.giorni_scadenza < 0 %}
+                                        <span class="urgency-badge urgency-scaduta">Scaduta da {{ scadenza.giorni_scadenza * -1 }} giorni</span>
+                                    {% elif scadenza.giorni_scadenza == 0 %}
+                                        <span class="urgency-badge urgency-critica">SCADE OGGI</span>
+                                    {% else %}
+                                        <span class="urgency-badge urgency-{{ scadenza.stato_urgenza }}">{{ scadenza.giorni_scadenza }} giorni</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="related-actions">
+                            <a href="{{ url_for('scadenze.dettaglio_scadenza', id=scadenza.id) }}" class="btn-related">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="view-all-link">
+                    <a href="{{ url_for('scadenze.index_scadenze') }}?veicolo={{ veicolo.id }}" class="btn-view-all">
+                        <i class="fas fa-list"></i>
+                        Vedi tutte le scadenze
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
-<style>
-/* === DETTAGLIO VEICOLO MATRIX === */
+<script>
+// Funzione per mostrare/nascondere PIN
+function togglePinVisibility() {
+    const pinHidden = document.querySelector('.pin-hidden');
+    const pinVisible = document.querySelector('.pin-visible');
+    const pinIcon = document.getElementById('pin-icon');
+    
+    if (pinHidden.style.display === 'none') {
+        pinHidden.style.display = 'inline';
+        pinVisible.style.display = 'none';
+        pinIcon.className = 'fas fa-eye';
+    } else {
+        pinHidden.style.display = 'none';
+        pinVisible.style.display = 'inline';
+        pinIcon.className = 'fas fa-eye-slash';
+    }
+}
+</script>
 
-.detail-container {
+<style>
+/* === DETTAGLIO COMPLETO VEICOLO === */
+
+.modern-detail-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 20px;
-    background: transparent;
+    padding: 30px;
+    background: linear-gradient(135deg, rgba(0, 20, 0, 0.7), rgba(0, 40, 0, 0.3));
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-/* Header del Dettaglio */
+/* Header Dettaglio */
 .detail-header-modern {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 35px;
     padding: 25px;
     background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.05));
     border: 1px solid rgba(0, 255, 65, 0.3);
-    border-radius: 12px;
+    border-radius: 15px;
     backdrop-filter: blur(10px);
 }
 
@@ -354,102 +482,130 @@
 .detail-icon-wrapper {
     width: 60px;
     height: 60px;
-    background: rgba(0, 255, 65, 0.2);
-    border-radius: 50%;
+    background: linear-gradient(135deg, #00ff41, #7fff7f);
+    border-radius: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 255, 65, 0.3);
 }
 
 .detail-icon-wrapper i {
     font-size: 24px;
-    color: #00ff41;
+    color: #000;
 }
 
-.detail-title-main {
-    font-size: 32px;
-    color: #00ff41;
+.detail-title-info h1 {
     margin: 0;
-    font-family: 'Orbitron', monospace;
+    font-size: 24px;
+    color: #00ff41;
+    font-weight: 700;
     text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
 }
 
-.detail-subtitle {
-    color: #a0a0a0;
-    margin: 5px 0;
-    font-size: 16px;
-}
-
-.detail-status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin-top: 8px;
-}
-
-.detail-status-badge.status-attivo {
+.vehicle-plate-header {
+    font-family: 'Orbitron', monospace;
     background: rgba(0, 255, 65, 0.2);
-    color: #00ff41;
-    border: 1px solid rgba(0, 255, 65, 0.3);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #00ff41;
+    margin-right: 8px;
 }
 
-.detail-status-badge.status-inattivo {
-    background: rgba(220, 53, 69, 0.2);
-    color: #dc3545;
-    border: 1px solid rgba(220, 53, 69, 0.3);
+.detail-subtitle {
+    margin: 5px 0 0 0;
+    color: #ccc;
+    font-size: 14px;
 }
 
-/* Grid delle sezioni */
+.detail-actions-header {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-header {
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00ff41, #7fff7f);
+    color: #000;
+    border: 1px solid #00ff41;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #7fff7f, #00ff41);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 255, 65, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.4);
+}
+
+.btn-secondary:hover {
+    background: rgba(108, 117, 125, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
+}
+
+/* Grid delle Sezioni */
 .detail-sections-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 25px;
-    margin-bottom: 30px;
 }
 
 .detail-card.full-width {
     grid-column: span 2;
 }
 
-/* Card delle sezioni */
+/* Card Dettaglio */
 .detail-card {
-    background: rgba(20, 20, 20, 0.9);
-    border: 1px solid rgba(0, 255, 65, 0.3);
-    border-radius: 12px;
+    background: rgba(0, 20, 0, 0.4);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 15px;
     overflow: hidden;
-    backdrop-filter: blur(10px);
     transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
 }
 
 .detail-card:hover {
+    border-color: rgba(0, 255, 65, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 255, 65, 0.1);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 255, 65, 0.15);
-    border-color: rgba(0, 255, 65, 0.5);
 }
 
 .card-header {
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.08), rgba(0, 255, 65, 0.03));
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
     display: flex;
     align-items: center;
     gap: 15px;
-    padding: 20px;
-    background: rgba(0, 255, 65, 0.1);
-    border-bottom: 1px solid rgba(0, 255, 65, 0.2);
 }
 
 .card-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(0, 255, 65, 0.2);
-    border-radius: 8px;
+    width: 45px;
+    height: 45px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .card-icon i {
@@ -458,260 +614,392 @@
 }
 
 .card-title h3 {
-    color: #00ff41;
     margin: 0;
+    color: #00ff41;
     font-size: 18px;
-    font-family: 'Orbitron', monospace;
+    font-weight: 600;
 }
 
 .card-title p {
-    color: #a0a0a0;
-    margin: 2px 0 0 0;
-    font-size: 12px;
+    margin: 3px 0 0 0;
+    color: #999;
+    font-size: 13px;
 }
 
 .card-content {
     padding: 25px;
 }
 
-/* Layout campi */
-.detail-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.detail-row:last-child {
-    margin-bottom: 0;
-}
-
-.detail-field {
+/* Items Dettaglio */
+.detail-item {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1);
 }
 
-.detail-field.full-width {
-    grid-column: span 2;
+.detail-item:last-child {
+    border-bottom: none;
 }
 
-/* Labels e valori */
-.field-label {
-    color: #00ff41;
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.field-value {
-    color: #ffffff;
+.detail-label {
+    color: #999;
+    font-weight: 500;
     font-size: 14px;
-    padding: 8px 12px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(0, 255, 65, 0.2);
-    border-radius: 6px;
+    min-width: 140px;
+}
+
+.detail-value {
+    color: #fff;
+    font-weight: 600;
+    text-align: right;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.field-value.primary {
+/* Badges Specifici */
+.vehicle-plate {
+    color: #00ff41;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
     background: rgba(0, 255, 65, 0.1);
-    border-color: rgba(0, 255, 65, 0.4);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.year-badge {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.km-value {
+    color: #00ff41;
+    font-weight: 700;
+}
+
+.nucleo-badge {
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.unit-assignment {
     color: #00ff41;
     font-weight: 600;
-    font-family: 'Orbitron', monospace;
 }
 
-.field-value.highlight {
-    background: rgba(0, 255, 65, 0.05);
-    border-color: rgba(0, 255, 65, 0.3);
+.custom-unit {
+    color: #ffc107;
+    font-style: italic;
 }
 
-.field-value.note-content {
-    white-space: pre-wrap;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
-    line-height: 1.5;
+.company-name {
+    color: #00ff41;
+    font-weight: 700;
 }
 
-/* Badge speciali */
-.nucleo-badge {
-    display: inline-flex;
+.ownership-badge {
+    color: #17a2b8;
+    background: rgba(23, 162, 184, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(23, 162, 184, 0.3);
+}
+
+/* Carburante Badges */
+.fuel-badge {
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.fuel-benzina {
+    background: rgba(255, 99, 132, 0.2);
+    color: #ff6384;
+    border: 1px solid rgba(255, 99, 132, 0.4);
+}
+
+.fuel-diesel {
+    background: rgba(54, 162, 235, 0.2);
+    color: #36a2eb;
+    border: 1px solid rgba(54, 162, 235, 0.4);
+}
+
+.fuel-metano {
+    background: rgba(75, 192, 192, 0.2);
+    color: #4bc0c0;
+    border: 1px solid rgba(75, 192, 192, 0.4);
+}
+
+.fuel-elettrico {
+    background: rgba(255, 206, 86, 0.2);
+    color: #ffce56;
+    border: 1px solid rgba(255, 206, 86, 0.4);
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
     align-items: center;
     gap: 5px;
-    padding: 4px 8px;
-    border-radius: 15px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
 }
 
-.nucleo-badge.nucleo-via-capitel {
-    background: rgba(0, 123, 255, 0.2);
-    color: #007bff;
-    border: 1px solid rgba(0, 123, 255, 0.3);
+.status-attivo {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.4);
 }
 
-.nucleo-badge.nucleo-campania {
+.status-inattivo {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+.status-in-manutenzione {
     background: rgba(255, 193, 7, 0.2);
     color: #ffc107;
-    border: 1px solid rgba(255, 193, 7, 0.3);
+    border: 1px solid rgba(255, 193, 7, 0.4);
 }
 
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 8px;
-    border-radius: 15px;
-    font-size: 11px;
+.status-dismesso {
+    background: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.4);
+}
+
+.status-fatto {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.4);
+}
+
+.status-da-fare {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+/* Carta Carburante */
+.card-number {
+    color: #00ff41;
+    font-family: 'Courier New', monospace;
     font-weight: 600;
-    text-transform: uppercase;
 }
 
-.status-badge.status-attivo {
-    background: rgba(0, 255, 65, 0.2);
-    color: #00ff41;
-    border: 1px solid rgba(0, 255, 65, 0.3);
-}
-
-/* Campo password */
-.password-field {
-    position: relative;
-}
-
-.btn-toggle-pin {
-    background: none;
-    border: none;
-    color: #00ff41;
-    cursor: pointer;
-    margin-left: auto;
-    padding: 4px;
-    border-radius: 4px;
-    transition: background 0.3s ease;
-}
-
-.btn-toggle-pin:hover {
-    background: rgba(0, 255, 65, 0.1);
-}
-
-/* Statistiche */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.stat-card {
+.pin-value {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 15px;
+    gap: 8px;
+}
+
+.pin-hidden, .pin-visible {
+    font-family: 'Courier New', monospace;
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.pin-toggle {
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    color: #00ff41;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pin-toggle:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: scale(1.05);
+}
+
+/* Contact Links */
+.contact-link {
+    color: #00ff41;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.contact-link:hover {
+    color: #7fff7f;
+    transform: translateX(2px);
+}
+
+/* Note Content */
+.notes-content {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(0, 255, 65, 0.2);
     border-radius: 8px;
+    padding: 15px;
+    color: #fff;
+    line-height: 1.6;
+    font-size: 14px;
 }
 
-.stat-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(0, 255, 65, 0.2);
+/* Related Lists */
+.related-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.related-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 255, 65, 0.2);
     border-radius: 8px;
+    padding: 15px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
+    transition: all 0.3s ease;
 }
 
-.stat-icon i {
+.related-item:hover {
+    border-color: rgba(0, 255, 65, 0.4);
+    background: rgba(0, 255, 65, 0.05);
+}
+
+.related-item.urgency-scaduta {
+    border-left: 4px solid #dc3545;
+}
+
+.related-item.urgency-critica {
+    border-left: 4px solid #ffc107;
+}
+
+.related-item.urgency-urgente {
+    border-left: 4px solid #fd7e14;
+}
+
+.related-info {
+    flex: 1;
+}
+
+.related-title {
     color: #00ff41;
-    font-size: 16px;
-}
-
-.stat-number {
-    font-size: 20px;
     font-weight: 600;
-    color: #00ff41;
-    font-family: 'Orbitron', monospace;
-}
-
-.stat-label {
-    font-size: 12px;
-    color: #a0a0a0;
-    text-transform: uppercase;
-}
-
-/* Quick links */
-.quick-links {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-.quick-link-btn {
+    margin-bottom: 5px;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 15px;
+}
+
+.related-details {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-size: 12px;
+}
+
+.related-date {
+    color: #999;
+}
+
+.related-km {
+    color: #7fff7f;
+    font-weight: 600;
+}
+
+.urgency-badge {
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.urgency-scaduta {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+.urgency-critica {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+.urgency-urgente {
+    background: rgba(253, 126, 20, 0.2);
+    color: #fd7e14;
+    border: 1px solid rgba(253, 126, 20, 0.4);
+}
+
+.urgency-normale {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.4);
+}
+
+.related-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-related {
     background: rgba(0, 255, 65, 0.1);
     border: 1px solid rgba(0, 255, 65, 0.3);
-    border-radius: 6px;
     color: #00ff41;
+    padding: 6px 8px;
+    border-radius: 4px;
     text-decoration: none;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
     transition: all 0.3s ease;
 }
 
-.quick-link-btn:hover {
+.btn-related:hover {
     background: rgba(0, 255, 65, 0.2);
     transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(0, 255, 65, 0.2);
 }
 
-/* Header buttons */
-.detail-actions-header {
-    display: flex;
-    gap: 15px;
+.view-all-link {
+    text-align: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0, 255, 65, 0.1);
 }
 
-.btn-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
+.btn-view-all {
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    color: #00ff41;
+    padding: 8px 16px;
+    border-radius: 6px;
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 12px;
     transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, #00ff41, #00cc33);
-    color: #000000;
+.btn-view-all:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: translateY(-1px);
 }
 
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(0, 255, 65, 0.4);
-}
-
-.btn-secondary {
-    background: rgba(108, 117, 125, 0.8);
-    color: #ffffff;
-    border: 1px solid rgba(108, 117, 125, 0.5);
-}
-
-.btn-secondary:hover {
-    background: rgba(108, 117, 125, 1);
-    transform: translateY(-2px);
+/* Text Muted */
+.text-muted {
+    color: #999;
+    font-style: italic;
 }
 
 /* Responsive */
@@ -726,47 +1014,34 @@
 }
 
 @media (max-width: 768px) {
+    .modern-detail-container {
+        padding: 15px;
+    }
+    
     .detail-header-modern {
         flex-direction: column;
         gap: 15px;
         text-align: center;
     }
     
-    .detail-row {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .detail-field.full-width {
-        grid-column: span 1;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-    
-    .quick-links {
+    .detail-actions-header {
         justify-content: center;
+    }
+    
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .detail-label {
+        min-width: auto;
+        font-size: 12px;
+    }
+    
+    .detail-value {
+        text-align: left;
     }
 }
 </style>
-
-<script>
-// Funzione toggle per mostrare/nascondere PIN
-function togglePin() {
-    const pinHidden = document.getElementById('pin-hidden');
-    const pinVisible = document.getElementById('pin-visible');
-    const pinIcon = document.getElementById('pin-icon');
-    
-    if (pinHidden.style.display === 'none') {
-        pinHidden.style.display = 'inline';
-        pinVisible.style.display = 'none';
-        pinIcon.className = 'fas fa-eye';
-    } else {
-        pinHidden.style.display = 'none';
-        pinVisible.style.display = 'inline';
-        pinIcon.className = 'fas fa-eye-slash';
-    }
-}
-</script>
 {% endblock %}
