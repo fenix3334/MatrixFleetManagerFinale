@@ -72,9 +72,30 @@ def create_app():
     app.register_blueprint(sinistri_bp, url_prefix='/sinistri')
     app.register_blueprint(allegati_sinistri_bp)
     
-    # Crea tabelle
+    # Crea tabelle e inizializza database
     with app.app_context():
         db.create_all()
+
+        # INIZIALIZZAZIONE AUTOMATICA: Crea utente admin se non esiste
+        from app.models import User, Nucleo
+
+        # Crea nuclei predefiniti
+        nuclei_default = [
+            {'nome': 'Via Capitel', 'descrizione': 'Cure Primarie ADI Via del Capitel'},
+            {'nome': 'Campania', 'descrizione': 'Cure Primarie ADI Via Campania'}
+        ]
+        for nucleo_data in nuclei_default:
+            if not Nucleo.query.filter_by(nome=nucleo_data['nome']).first():
+                db.session.add(Nucleo(**nucleo_data))
+
+        # Crea utente admin se non esiste
+        if not User.query.filter_by(username='admin').first():
+            admin = User(username='admin', nucleo='Via Capitel', ruolo='admin', attivo=True)
+            admin.set_password('admin123')
+            db.session.add(admin)
+            print("✅ Utente admin creato")
+
+        db.session.commit()
 
     # Context processor per notifiche dinamiche
     @app.context_processor
