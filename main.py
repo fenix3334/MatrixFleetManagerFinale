@@ -9,7 +9,6 @@ from datetime import datetime
 from flask import redirect, url_for
 from flask_login import current_user
 from app import create_app
-from app.routes.versioni import versioni_bp
 
 def auto_backup():
     """Backup automatico del database all'avvio"""
@@ -86,7 +85,7 @@ def show_system_info():
 
 # Crea app Flask
 app = create_app()
-app.register_blueprint(versioni_bp)
+# versioni_bp è già registrato in app/__init__.py
 
 # Route principale - redirect a login se non autenticato
 @app.route('/')

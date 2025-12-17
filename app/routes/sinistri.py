@@ -30,7 +30,7 @@ from app.utils.nuclei import (
     get_nucleo_corrente_admin,
 )
 
-from sqlalchemy import inspect
+from sqlalchemy import inspect, text
 
 sinistri_bp = Blueprint('sinistri', __name__)
 
@@ -65,9 +65,11 @@ def ensure_sinistri_columns() -> None:
     ]:
         if col_name not in existing:
             try:
-                db.engine.execute(f"ALTER TABLE sinistri ADD COLUMN {col_name} {col_type}")
+                db.session.execute(text(f"ALTER TABLE sinistri ADD COLUMN {col_name} {col_type}"))
+                db.session.commit()
             except Exception:
                 # Ignore errors (e.g., column already exists in race conditions)
+                db.session.rollback()
                 pass
 
 

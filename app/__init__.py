@@ -18,6 +18,8 @@ from app.routes.allegati import allegati_bp  # Blueprint per allegati manutenzio
 from app.routes.allegati_scadenze import allegati_scadenze_bp  # Blueprint per allegati scadenze
 from app.routes.sinistri import sinistri_bp  # Nuovo modulo sinistri
 from app.routes.allegati_sinistri import allegati_sinistri_bp  # Blueprint allegati sinistri
+from app.routes.versioni import versioni_bp  # Blueprint visualizzazione versioni/CHANGELOG
+from app.routes.scheda_km import scheda_km_bp  # Blueprint per schede chilometriche
 
 def create_app():
     app = Flask(__name__)
@@ -71,6 +73,8 @@ def create_app():
     app.register_blueprint(allegati_scadenze_bp)
     app.register_blueprint(sinistri_bp, url_prefix='/sinistri')
     app.register_blueprint(allegati_sinistri_bp)
+    app.register_blueprint(versioni_bp)  # Visualizzazione changelog
+    app.register_blueprint(scheda_km_bp)  # Schede chilometriche trimestrali
     
     # Crea tabelle
     with app.app_context():
@@ -140,7 +144,5 @@ def create_app():
 
         count = len(notifs)
         return dict(notifications_count=count, notifications_list=notifs[:10])
-    
-    from app.routes.scheda_km import scheda_km_bp
-    app.register_blueprint(scheda_km_bp)
+
     return app
