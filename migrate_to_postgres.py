@@ -32,12 +32,16 @@ print(f"\n✅ Database SQLite trovato")
 try:
     from app import create_app
     from app.extensions import db
-    from app.models import (
-        Veicolo, Fornitore, Manutenzione, Scadenza, User, Nucleo,
-        Sinistro, LimiteChilometrico, ManutenzionePreventiva,
-        AllegatoManutenzione, AllegatoScadenza, AllegatoSinistro,
-        LogPreventiva, SchedaKm
-    )
+    # Importa solo i modelli base essenziali
+    from app.models import Veicolo, Fornitore, Manutenzione, Scadenza, User, Nucleo
+
+    # Prova a importare modelli opzionali (potrebbero non esistere)
+    try:
+        from app.models import Sinistro
+        HAS_SINISTRI = True
+    except ImportError:
+        HAS_SINISTRI = False
+
     from sqlalchemy import create_engine, text
     from sqlalchemy.orm import sessionmaker
 except ImportError as e:
@@ -199,9 +203,9 @@ def migrate_data():
         db.session.commit()
         print(f"  ✅ Migrate {len(scadenze_sqlite)} scadenze")
 
-        # STEP 7: Migra Sinistri (se esistono)
+        # STEP 7: Migra Sinistri (se esistono e se il modello è disponibile)
         print("\n⚠️  Migrazione Sinistri...")
-        if 'sinistri' in metadata.tables:
+        if HAS_SINISTRI and 'sinistri' in metadata.tables:
             sinistri_sqlite = sqlite_session.execute(
                 text("SELECT * FROM sinistri")
             ).fetchall()
@@ -219,7 +223,7 @@ def migrate_data():
             db.session.commit()
             print(f"  ✅ Migrati {len(sinistri_sqlite)} sinistri")
         else:
-            print("  ⚠️  Tabella sinistri non trovata")
+            print("  ⚠️  Tabella sinistri non disponibile o modello non presente")
 
         # Verifica finale
         print("\n📊 RIEPILOGO MIGRAZIONE:")
