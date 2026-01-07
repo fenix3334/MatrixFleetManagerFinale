@@ -395,6 +395,9 @@ class Manutenzione(db.Model):
     nucleo = db.Column(db.String(50), default='Via Capitel')
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Relazioni
+    allegati = db.relationship('AllegatoManutenzione', back_populates='manutenzione', cascade='all, delete-orphan')
+
     def __repr__(self):
         return f'<Manutenzione {self.id} - {self.tipo_intervento}>'
 
@@ -410,7 +413,10 @@ class Scadenza(db.Model):
     notifica_giorni = db.Column(db.Integer, default=30)
     nucleo = db.Column(db.String(50), default='Via Capitel')
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
+    # Relazioni
+    allegati = db.relationship('AllegatoScadenza', back_populates='scadenza', cascade='all, delete-orphan')
+
     @property
     def giorni_scadenza(self):
         if self.data_scadenza:
@@ -490,8 +496,10 @@ class ManutenzionePreventiva(db.Model):
     nucleo = db.Column(db.String(50), default='Via Capitel')
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # relazione con veicolo
+    # relazioni
     veicolo = db.relationship('Veicolo', backref='manutenzioni_preventive')
+    log_entries = db.relationship('LogPreventiva', back_populates='preventiva', cascade='all, delete-orphan')
+    allegati = db.relationship('AllegatoPreventiva', back_populates='preventiva', cascade='all, delete-orphan')
 
     def calcola_prossimo_km(self):
         """Calcola il chilometraggio previsto per il prossimo intervento."""
@@ -558,7 +566,7 @@ class LogPreventiva(db.Model):
     data_creazione = db.Column(db.DateTime, default=datetime.utcnow)
 
     # relazioni
-    preventiva = db.relationship('ManutenzionePreventiva', backref='log_entries')
+    preventiva = db.relationship('ManutenzionePreventiva', back_populates='log_entries')
     user = db.relationship('User')
 
     def __repr__(self):
@@ -582,7 +590,7 @@ class AllegatoPreventiva(db.Model):
     filepath = db.Column(db.String(255), nullable=False)
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    preventiva = db.relationship('ManutenzionePreventiva', backref='allegati')
+    preventiva = db.relationship('ManutenzionePreventiva', back_populates='allegati')
 
     def __repr__(self):
         return f"<AllegatoPreventiva {self.filename}>"
@@ -604,7 +612,7 @@ class AllegatoManutenzione(db.Model):
     filepath = db.Column(db.String(255), nullable=False)
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    manutenzione = db.relationship('Manutenzione', backref='allegati')
+    manutenzione = db.relationship('Manutenzione', back_populates='allegati')
 
     def __repr__(self):
         return f"<Allegato {self.filename}>"
@@ -628,7 +636,7 @@ class AllegatoScadenza(db.Model):
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relazione verso la scadenza
-    scadenza = db.relationship('Scadenza', backref='allegati')
+    scadenza = db.relationship('Scadenza', back_populates='allegati')
 
     def __repr__(self):
         return f"<AllegatoScadenza {self.filename}>"

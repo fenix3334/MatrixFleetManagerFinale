@@ -212,21 +212,11 @@ def elimina_preventiva(id):
     try:
         descrizione = preventiva.tipo_intervento
         veic_targa = preventiva.veicolo.targa
-        preventiva_id = preventiva.id
+
+        # L'eliminazione in cascata rimuoverà automaticamente tutti i log associati
         db.session.delete(preventiva)
         db.session.commit()
-        # Crea log di eliminazione utilizzando l'ID salvato prima della cancellazione
-        try:
-            log = LogPreventiva(
-                preventiva_id=preventiva_id,
-                user_id=current_user.id if not current_user.is_anonymous else None,
-                azione='eliminazione',
-                dettagli=f"Eliminata manutenzione preventiva {descrizione}"
-            )
-            db.session.add(log)
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
+
         flash(
             f"Manutenzione preventiva '{descrizione}' per {veic_targa} eliminata con successo!",
             'success',
